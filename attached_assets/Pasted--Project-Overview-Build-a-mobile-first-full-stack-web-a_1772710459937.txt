@@ -1,0 +1,102 @@
+🎯 Project Overview
+Build a mobile-first, full-stack web application for FishTokri (fishtokri.com) — an online fresh fish, seafood & meat retailer based in Mumbai, delivering across Thane, Mulund, Airoli, Bhandup, Vikhroli, Powai, Vashi, and Nerul.
+The app has two distinct surfaces:
+
+Customer-Facing Storefront — a beautiful, app-like experience for clients to browse daily availability and place order requests
+Admin Panel — an internal tool for employees to manage inventory, availability, and product listings (full CRUD)
+
+
+🛍️ PART 1: CUSTOMER STOREFRONT
+Design Direction
+
+Mobile-first (primary device is smartphone)
+Aesthetic: Fresh, coastal, vibrant — think ocean blues, coral reds, clean whites with bold typography
+Feel: Like a premium fish market app — energetic, fresh, trustworthy
+Font pairing: Bold display font (e.g. Playfair Display or Fraunces) + clean body font (e.g. DM Sans)
+Use animated availability badges (🟢 Available / 🔴 Unavailable / 🟡 Limited Stock)
+Hero section with "Today's Fresh Catch" headline that updates daily
+
+Pages & Features
+Home / Storefront Page
+
+Sticky header with FishTokri logo + cart icon
+Today's date displayed prominently ("Fresh on March 5, 2026")
+Category tabs with scroll: Fish | Prawns | Chicken | Mutton | Masalas
+Product cards showing:
+
+Product name
+Category icon/emoji
+Availability status badge (Available / Unavailable / Limited)
+Price (optional, if admin sets it)
+"Add to Order" button (disabled if unavailable)
+
+
+Filter/search bar to find specific items
+Animated banner: "Pan Ready • Hygienically Cut • Doorstep Delivery"
+
+Product Categories to Display (pre-populated from image):
+CategoryItems🐟 FishSilver Pomfret, Black Pomfret, Khapri Pomfret, Surmai, Rawas, Lady Fish, Bombil, Bangda, Tarli, Karli, Shark, Catla, Tuna, Ghol, Jitada, Vaam, Indian Basa, Rohu🦐 PrawnsWhite Prawn, Red Prawn, Tiger Prawn, Freshwater Prawn, Scampi Prawn, Lobsters, Kardi, Jumbo Prawn🍗 ChickenChicken Curry Cut, Chicken Breast, Chicken Boneless Cubes, Chicken Whole Leg, Chicken Drumstick, Chicken Lollipop, Chicken Kheema, Chicken Liver🐐 MuttonGoat Curry Cut, Goat Shoulder Cut, Goat Boneless, Goat Liver, Goat Kheema, Goat Paya, Goat Brain, Goat Biryani Cut🌶️ MasalasFish Curry Masala, Fish Fry Masala, Malvani Masala, Special Chicken Masala, Special Mutton Masala, Koliwada Masala
+Order Request Flow
+
+Cart drawer/modal (slide-up on mobile)
+Customer fills: Name, Phone Number, Delivery Area (dropdown of served areas), Notes
+Submit sends WhatsApp message OR stores in database as pending order
+Confirmation screen with order summary
+
+About Section
+
+Short brand blurb
+Delivery areas listed
+WhatsApp contact button
+Link to fishtokri.com
+
+
+🔧 PART 2: ADMIN PANEL
+Access
+
+Separate route: /admin or subdomain admin.fishtokri.com
+Protected by login (username + password, JWT auth)
+Role: Employee / Manager
+
+Dashboard Home
+
+Summary cards: Total Products | Available Today | Out of Stock | Pending Orders
+Quick-toggle section: flip availability of items in one tap
+"Today's Update" status — shows last time inventory was updated + who updated it
+
+Product Management (Full CRUD)
+Product List View
+
+Table/card list of all products
+Columns: Name | Category | Status | Price | Actions
+Bulk actions: Mark all in category as Available / Unavailable
+Search + filter by category or status
+
+Add New Product
+
+Form fields: Product Name, Category (dropdown), Description (optional), Price (optional), Unit (e.g. per kg, per piece), Image upload (optional), Initial Status
+Save to database
+
+Edit Product
+
+Edit any field
+Change availability status: Available / Unavailable / Limited Stock
+Set custom "limited stock" note (e.g. "Only 2kg left today")
+
+Delete Product
+
+Soft delete (archive, not permanent) with confirmation modal
+
+Stock / Availability Management
+
+Daily availability toggle panel — designed for quick morning updates
+Category-level bulk toggle
+Individual item toggle with status: 🟢 Available | 🔴 Unavailable | 🟡 Limited
+Optional: set restock time/date
+
+Order Management
+
+View incoming order requests: customer name, phone, items, delivery area, time
+Mark orders as: Pending → Confirmed → Out for Delivery → Delivered
+Filter by status, date, area
+Click to call / WhatsApp customer directly

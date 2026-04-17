@@ -1,0 +1,62 @@
+root@srv1232657:/var/www/FISHTOKRI# pm2 log 36
+[TAILING] Tailing last 15 lines for [36] process (change the value with --lines option)
+/root/.pm2/logs/fishtokri-out.log last 15 lines:
+/root/.pm2/logs/fishtokri-error.log last 15 lines:
+36|fishtok | Error: MONGODB_URI must be set.
+36|fishtok |     at <anonymous> (/var/www/FISHTOKRI/server/db.ts:7:9)
+36|fishtok |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+36|fishtok |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+36|fishtok | Error: MONGODB_URI must be set.
+36|fishtok |     at <anonymous> (/var/www/FISHTOKRI/server/db.ts:7:9)
+36|fishtok |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+36|fishtok |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+36|fishtok | Error: MONGODB_URI must be set.
+36|fishtok |     at <anonymous> (/var/www/FISHTOKRI/server/db.ts:7:9)
+36|fishtok |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+36|fishtok |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+
+36|fishtokri  | Error: MONGODB_URI must be set.
+36|fishtokri  |     at <anonymous> (/var/www/FISHTOKRI/server/db.ts:7:9)
+36|fishtokri  |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+36|fishtokri  |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+36|fishtokri  | Error: MONGODB_URI must be set.
+36|fishtokri  |     at <anonymous> (/var/www/FISHTOKRI/server/db.ts:7:9)
+36|fishtokri  |     at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+36|fishtokri  |     at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+^C
+root@srv1232657:/var/www/FISHTOKRI# pm2 list
+┌────┬──────────────────────────────┬─────────────┬─────────┬─────────┬──────────┬────────┬──────┬───────────┬──────────┬──────────┬──────────┬──────────┐
+│ id │ name                         │ namespace   │ version │ mode    │ pid      │ uptime │ ↺    │ status    │ cpu      │ mem      │ user     │ watching │
+├────┼──────────────────────────────┼─────────────┼─────────┼─────────┼──────────┼────────┼──────┼───────────┼──────────┼──────────┼──────────┼──────────┤
+│ 3  │ DM-pos                       │ default     │ 1.0.0   │ fork    │ 409651   │ 38D    │ 701  │ online    │ 0%       │ 170.7mb  │ root     │ disabled │
+│ 12 │ airavata-app                 │ default     │ 1.0.0   │ fork    │ 439563   │ 35D    │ 8    │ online    │ 0%       │ 134.7mb  │ root     │ disabled │
+│ 1  │ airavatatechnologies-web     │ default     │ 1.0.0   │ fork    │ 12849    │ 3M     │ 1    │ online    │ 0%       │ 112.9mb  │ root     │ disabled │
+│ 35 │ atdigitalmenu                │ default     │ 1.0.0   │ cluster │ 820423   │ 30h    │ 1    │ online    │ 0%       │ 115.2mb  │ root     │ disabled │
+│ 16 │ barrelborn                   │ default     │ 1.0.0   │ fork    │ 492389   │ 32D    │ 1    │ online    │ 0%       │ 130.8mb  │ root     │ disabled │
+│ 10 │ bg-remover-portal            │ default     │ 1.0.0   │ fork    │ 100137   │ 2M     │ 0    │ online    │ 0%       │ 140.4mb  │ root     │ disabled │
+│ 14 │ eva-jewels                   │ default     │ 1.0.0   │ cluster │ 194157   │ 2M     │ 0    │ online    │ 0%       │ 131.5mb  │ root     │ disabled │
+│ 36 │ fishtokri                    │ default     │ 1.0.0   │ fork    │ 901863   │ 2s     │ 5910 │ online    │ 0%       │ 148.8mb  │ root     │ disabled │
+│ 6  │ portfolio-app                │ default     │ N/A     │ fork    │ 68714    │ 2M     │ 2    │ online    │ 0%       │ 72.2mb   │ root     │ disabled │
+│ 11 │ rest-express                 │ default     │ 1.0.0   │ fork    │ 439582   │ 35D    │ 2    │ online    │ 0%       │ 86.8mb   │ root     │ disabled │
+│ 0  │ restaurant-management-app    │ default     │ N/A     │ fork    │ 447263   │ 35D    │ 8    │ online    │ 0%       │ 76.1mb   │ root     │ disabled │
+│ 2  │ restaurant-pos               │ default     │ 1.0.0   │ cluster │ 17439    │ 2M     │ 2    │ online    │ 0%       │ 137.2mb  │ root     │ disabled │
+│ 32 │ whamo-app                    │ default     │ 1.0.0   │ fork    │ 748006   │ 10D    │ 10   │ online    │ 0%       │ 116.3mb  │ root     │ disabled │
+└────┴──────────────────────────────┴─────────────┴─────────┴─────────┴──────────┴────────┴──────┴───────────┴──────────┴──────────┴──────────┴──────────┘
+root@srv1232657:/var/www/FISHTOKRI# cat ecosystem.config.cjs
+module.exports = {
+  apps: [
+    {
+      name: "fishtokri",
+      script: "dist/index.cjs",
+      interpreter: "node",
+      env: {
+        NODE_ENV: "production",
+        PORT: 3010,
+        SESSION_SECRET: "fish_tokri_prod_secret",
+        MONGODB_URI: "mongodb+srv://raneaniket23_db_user:0lEZL6KqIATNmZsj@fishtokricluster.vhw7jp9.mongodb.net/?appName=Fishtokricluster",
+        MONGODB_DB: "fishtokri"
+      }
+    }
+  ]
+};
+root@srv1232657:/var/www/FISHTOKRI#
