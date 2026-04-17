@@ -184,7 +184,10 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
           <div className="px-7 pt-8 pb-8">
             {/* Logo + heading */}
             <div className="flex flex-col items-center mb-7">
-              <FishTokriLogo className="h-12 w-auto mb-4" />
+              <FishTokriLogo className="h-12 w-auto mb-2" />
+              <div className="w-20 h-20">
+                <Lottie animationData={fishAnimation} loop autoplay />
+              </div>
               <h2 className="text-xl font-bold text-slate-800 text-center leading-snug">
                 Welcome! <span style={{ color: "#364F9F" }}>Fresh seafood & meat</span>
                 <br />at your doorstep
