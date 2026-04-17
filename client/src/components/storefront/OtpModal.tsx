@@ -170,7 +170,7 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative bg-white w-full sm:max-w-[400px] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 duration-300 overflow-hidden">
+      <div className="relative bg-white w-full sm:max-w-[500px] rounded-t-3xl sm:rounded-3xl shadow-2xl animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-0 duration-300 overflow-hidden">
 
         <button
           onClick={onClose}
@@ -181,30 +181,27 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
         </button>
 
         {step === "phone" ? (
-          <div className="px-6 pt-7 pb-7">
-            {/* Logo + Lottie + heading */}
-            <div className="flex flex-col items-center mb-6">
-              <FishTokriLogo className="h-7 w-auto mb-2" />
-              <div className="w-20 h-20">
-                <Lottie animationData={fishAnimation} loop autoplay />
-              </div>
-              <h2 className="text-lg font-bold text-slate-800 text-center mt-2 leading-snug">
+          <div className="px-7 pt-8 pb-8">
+            {/* Logo + heading */}
+            <div className="flex flex-col items-center mb-7">
+              <FishTokriLogo className="h-12 w-auto mb-4" />
+              <h2 className="text-xl font-bold text-slate-800 text-center leading-snug">
                 Welcome! <span style={{ color: "#364F9F" }}>Fresh seafood & meat</span>
-                <br />at your doorstep 🐟
+                <br />at your doorstep
               </h2>
-              <p className="text-xs text-slate-400 mt-1 text-center">
+              <p className="text-sm text-slate-400 mt-2 text-center">
                 Enter your mobile number to continue
               </p>
             </div>
 
-            {/* Flag + +91 label */}
-            <div className="flex items-center gap-1.5 mb-2">
-              <img src={flagImg} alt="India" className="w-5 h-5 rounded-full object-cover shrink-0" />
-              <span className="text-sm font-semibold text-slate-600">+91</span>
-            </div>
-
-            {/* 10 digit boxes */}
-            <div className="flex gap-1.5 mb-4">
+            {/* Flag + +91 + 10 digit boxes — one horizontal row */}
+            <div className="flex items-center gap-2 mb-5">
+              {/* Country code */}
+              <div className="flex items-center gap-1.5 shrink-0 pr-2 border-r-2 border-slate-200">
+                <img src={flagImg} alt="India" className="w-5 h-5 rounded-full object-cover" />
+                <span className="text-sm font-bold text-slate-700 whitespace-nowrap">+91</span>
+              </div>
+              {/* 10 digit inputs */}
               {phoneRefs.map((ref, i) => (
                 <input
                   key={i}
@@ -216,7 +213,7 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
                   onChange={e => handlePhoneDigit(i, e.target.value)}
                   onKeyDown={e => handlePhoneKeyDown(i, e)}
                   onPaste={handlePhonePaste}
-                  className="flex-1 min-w-0 h-10 text-center text-sm font-bold border-2 rounded-lg outline-none transition-all"
+                  className="flex-1 min-w-0 h-11 text-center text-sm font-bold border-2 rounded-xl outline-none transition-all"
                   style={{
                     borderColor: phoneDigits[i] ? "#364F9F" : "#e2e8f0",
                     background: phoneDigits[i] ? "#364F9F0A" : "#f8fafc",
