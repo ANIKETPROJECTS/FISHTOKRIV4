@@ -208,7 +208,7 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
           )}
         </AnimatePresence>
 
-        <div className="flex flex-col flex-1 px-7 pt-10 pb-8">
+        <div className="flex flex-col flex-1 px-7 pt-16 pb-8">
           {/* Logo + Hero */}
           <div className="flex flex-col items-center mb-7">
             <FishTokriLogo className="h-16 w-auto mb-3" />
