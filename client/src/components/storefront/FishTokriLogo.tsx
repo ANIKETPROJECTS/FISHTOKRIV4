@@ -2,7 +2,7 @@ export function FishTokriLogo({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="40 330 770 165"
+      viewBox="0 325 815 160"
       className={className}
       aria-label="FishTokri"
     >

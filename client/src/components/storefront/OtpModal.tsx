@@ -184,20 +184,20 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
           <div className="px-6 pt-7 pb-7">
             {/* Logo + Lottie */}
             <div className="flex flex-col items-center mb-5">
-              <FishTokriLogo className="h-7 w-auto mb-3" />
+              <FishTokriLogo className="h-7 w-auto mb-2" />
               <div className="w-24 h-24 -my-1">
                 <Lottie animationData={fishAnimation} loop autoplay />
               </div>
-              <h2 className="text-xl font-bold text-slate-800 text-center leading-snug mt-2">
-                Fresh catch, <span style={{ color: "#364F9F" }}>your way!</span>
+              <h2 className="text-xl font-bold text-slate-800 text-center mt-2">
+                Login / Sign up
               </h2>
-              <p className="text-xs text-slate-400 mt-1 text-center">
-                Enter your 10-digit mobile number to get started
+              <p className="text-sm text-slate-500 mt-1 text-center">
+                Enter your mobile number to continue
               </p>
             </div>
 
             {/* Progress bar */}
-            <div className="flex gap-1 mb-4">
+            <div className="flex gap-1 mb-3">
               {Array(10).fill(0).map((_, i) => (
                 <div
                   key={i}
@@ -208,12 +208,12 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
             </div>
 
             {/* Phone boxes */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="flex items-center gap-1.5 bg-slate-50 border-2 border-slate-200 rounded-xl px-2.5 py-2.5 shrink-0">
-                <img src={flagImg} alt="India" className="w-5 h-5 rounded-full object-cover" />
-                <span className="text-sm font-bold text-slate-700">+91</span>
+            <div className="mb-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <img src={flagImg} alt="India" className="w-5 h-5 rounded-full object-cover shrink-0" />
+                <span className="text-sm font-semibold text-slate-600 shrink-0">+91</span>
               </div>
-              <div className="flex gap-1 flex-1">
+              <div className="flex gap-1">
                 {phoneRefs.map((ref, i) => (
                   <input
                     key={i}
