@@ -657,7 +657,6 @@ export function CartDrawer() {
                           <div className="flex-1 text-left min-w-0">
                             {appliedCoupon ? (
                               <span className="text-sm font-semibold text-emerald-700 flex items-center gap-1.5">
-                                <CheckCircle2 className="w-3.5 h-3.5" />
                                 <span className="font-mono tracking-wider">{appliedCoupon.code}</span>
                                 <span className="font-normal text-emerald-600">· saved ₹{discountAmount}</span>
                               </span>
@@ -677,7 +676,7 @@ export function CartDrawer() {
                           <>
                             {/* Applied coupon banner */}
                             {appliedCoupon && (
-                              <div className="flex items-center justify-between px-4 py-3 bg-emerald-500 border-t border-emerald-400">
+                              <div className="flex items-center justify-between px-4 py-3 bg-emerald-600 border-t border-emerald-700">
                                 <div className="flex items-center gap-2.5 min-w-0">
                                   <span
                                     aria-hidden
@@ -784,7 +783,7 @@ export function CartDrawer() {
                                         >
                                           {coupon.code}
                                         </span>
-                                        <p className="text-xs text-muted-foreground mt-0.5 truncate">{coupon.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5 whitespace-normal break-words">{coupon.description}</p>
                                         {exhausted && (
                                           <p className="text-[10px] text-red-500 mt-0.5 font-medium">Limit reached</p>
                                         )}
@@ -806,7 +805,7 @@ export function CartDrawer() {
                                           disabled={!applicable || isApplied || isApplyingCoupon || exhausted}
                                           className={`ml-3 shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
                                             isApplied
-                                              ? "bg-emerald-500 text-white cursor-default"
+                                              ? "bg-emerald-600 text-white cursor-default"
                                               : exhausted
                                                 ? "bg-red-50 text-red-400 cursor-not-allowed"
                                                 : applicable
