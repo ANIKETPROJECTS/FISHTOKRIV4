@@ -760,10 +760,10 @@ export function CartDrawer() {
                                     key={coupon.id}
                                     className={`flex items-center justify-between px-4 py-3 transition-colors ${applicable ? "bg-background hover:bg-muted/10" : "bg-muted/5 opacity-60"}`}
                                   >
-                                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
                                       <span
                                         aria-hidden
-                                        className="w-6 h-6 shrink-0 inline-block"
+                                        className="w-6 h-6 shrink-0 inline-block mt-0.5"
                                         style={{
                                           backgroundColor: applicable ? "#364F9F" : "#9CA3AF",
                                           WebkitMaskImage: `url(${tagIconImg})`,
@@ -776,14 +776,14 @@ export function CartDrawer() {
                                           maskPosition: "center",
                                         }}
                                       />
-                                      <div className="min-w-0">
+                                      <div className="min-w-0 flex-1">
                                         <span
-                                          className={`font-mono font-bold text-xs tracking-wider rounded-full px-2.5 py-0.5 text-white ${applicable ? "" : "opacity-60"}`}
+                                          className={`font-mono font-bold text-xs tracking-wider rounded-full px-2.5 py-0.5 text-white inline-block ${applicable ? "" : "opacity-60"}`}
                                           style={{ backgroundColor: "#F05B4E" }}
                                         >
                                           {coupon.code}
                                         </span>
-                                        <p className="text-xs text-muted-foreground mt-0.5 whitespace-normal break-words">{coupon.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words leading-snug">{coupon.description}</p>
                                         {exhausted && (
                                           <p className="text-[10px] text-red-500 mt-0.5 font-medium">Limit reached</p>
                                         )}
@@ -805,14 +805,20 @@ export function CartDrawer() {
                                           disabled={!applicable || isApplied || isApplyingCoupon || exhausted}
                                           className={`ml-3 shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
                                             isApplied
-                                              ? "bg-emerald-600 text-white cursor-default"
+                                              ? "text-white cursor-default"
                                               : exhausted
                                                 ? "bg-red-50 text-red-400 cursor-not-allowed"
                                                 : applicable
                                                   ? "text-white"
                                                   : "bg-muted text-muted-foreground cursor-not-allowed"
                                           }`}
-                                          style={applicable && !isApplied && !exhausted ? { backgroundColor: "#364F9F" } : undefined}
+                                          style={
+                                            isApplied
+                                              ? { backgroundColor: "#047857" }
+                                              : applicable && !exhausted
+                                                ? { backgroundColor: "#364F9F" }
+                                                : undefined
+                                          }
                                         >
                                           {isThisApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                                           {isApplied ? "Applied" : exhausted ? "Limit reached" : applicable ? "Apply" : "Locked"}
