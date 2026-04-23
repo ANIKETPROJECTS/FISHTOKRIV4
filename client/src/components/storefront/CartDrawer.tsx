@@ -11,6 +11,8 @@ import popperAnim from "@/assets/lottie/popper.json";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
 import iconBinImg from "@assets/bin_1776927610776.png";
 import notesIconImg from "@/assets/notes.png";
+import giftCardIconImg from "@/assets/gift-card.png";
+import tagIconImg from "@/assets/tag.png";
 import { useCart } from "@/context/CartContext";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCustomer } from "@/context/CustomerContext";
@@ -518,14 +520,16 @@ export function CartDrawer() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto scrollbar-hide">
                     {savedTotal > 0 && (
-                      <div className="mx-4 mt-1 flex items-center justify-center gap-1 px-2">
-                        <Lottie
-                          animationData={popperAnim}
-                          loop
-                          autoplay
-                          style={{ width: 72, height: 72, flexShrink: 0 }}
-                        />
-                        <p className="text-sm font-semibold leading-none">
+                      <div className="mx-4 -mt-2 -mb-2 flex items-center justify-center px-2">
+                        <div className="w-12 h-12 -mr-1 overflow-hidden flex items-center justify-center shrink-0">
+                          <Lottie
+                            animationData={popperAnim}
+                            loop
+                            autoplay
+                            style={{ width: 96, height: 96 }}
+                          />
+                        </div>
+                        <p className="text-sm font-semibold leading-tight">
                           <span style={{ color: "#F05B4E" }}>Congratulations!</span>
                           <span style={{ color: "#364F9F" }}> You've saved ₹{savedTotal}</span>
                         </p>
@@ -632,7 +636,21 @@ export function CartDrawer() {
                           className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20 hover:bg-muted/30 transition-colors"
                           data-testid="button-toggle-coupons"
                         >
-                          <Ticket className="w-4 h-4 text-primary shrink-0" />
+                          <span
+                            aria-hidden
+                            className="w-5 h-5 shrink-0 inline-block"
+                            style={{
+                              backgroundColor: "#364F9F",
+                              WebkitMaskImage: `url(${giftCardIconImg})`,
+                              maskImage: `url(${giftCardIconImg})`,
+                              WebkitMaskRepeat: "no-repeat",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskSize: "contain",
+                              maskSize: "contain",
+                              WebkitMaskPosition: "center",
+                              maskPosition: "center",
+                            }}
+                          />
                           <div className="flex-1 text-left min-w-0">
                             {appliedCoupon ? (
                               <span className="text-sm font-semibold text-emerald-700 flex items-center gap-1.5">
@@ -641,7 +659,7 @@ export function CartDrawer() {
                                 <span className="font-normal text-emerald-600">· saved ₹{discountAmount}</span>
                               </span>
                             ) : (
-                              <span className="text-sm font-semibold text-primary">
+                              <span className="text-sm font-semibold" style={{ color: "#F05B4E" }}>
                                 {cartCoupons.filter(isCouponApplicable).length > 0
                                   ? `${cartCoupons.filter(isCouponApplicable).length} offer${cartCoupons.filter(isCouponApplicable).length > 1 ? "s" : ""} available`
                                   : `${cartCoupons.length} coupon${cartCoupons.length > 1 ? "s" : ""}`}
@@ -684,13 +702,14 @@ export function CartDrawer() {
                                     onChange={e => { setCouponInput(e.target.value.toUpperCase()); setCouponError(""); }}
                                     onKeyDown={e => e.key === "Enter" && applyFromInput()}
                                     placeholder="Enter coupon code"
-                                    className="flex-1 h-9 px-3 text-sm font-mono font-semibold tracking-wider rounded-lg border border-border/60 bg-muted/30 focus:outline-none focus:border-primary/60 placeholder:font-normal placeholder:tracking-normal"
+                                    className="flex-1 h-9 px-4 text-sm font-mono font-semibold tracking-wider rounded-full border border-border/60 bg-muted/30 focus:outline-none focus:border-[#364F9F] placeholder:font-normal placeholder:tracking-normal"
                                     data-testid="input-coupon-code"
                                   />
                                   <button
                                     onClick={applyFromInput}
                                     disabled={!couponInput.trim() || isApplyingCoupon}
-                                    className="px-4 h-9 rounded-lg bg-primary text-white text-xs font-bold disabled:opacity-40 hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+                                    className="px-5 h-9 rounded-full text-white text-xs font-bold disabled:opacity-40 transition-colors flex items-center gap-1.5"
+                                    style={{ backgroundColor: "#364F9F" }}
                                     data-testid="button-apply-coupon"
                                   >
                                     {isApplyingCoupon ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
@@ -723,11 +742,26 @@ export function CartDrawer() {
                                     className={`flex items-center justify-between px-4 py-3 transition-colors ${applicable ? "bg-background hover:bg-muted/10" : "bg-muted/5 opacity-60"}`}
                                   >
                                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                      <div className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${applicable ? "bg-primary/10" : "bg-muted"}`}>
-                                        <Tag className={`w-3.5 h-3.5 ${applicable ? "text-primary" : "text-muted-foreground"}`} />
-                                      </div>
+                                      <span
+                                        aria-hidden
+                                        className="w-6 h-6 shrink-0 inline-block"
+                                        style={{
+                                          backgroundColor: applicable ? "#364F9F" : "#9CA3AF",
+                                          WebkitMaskImage: `url(${tagIconImg})`,
+                                          maskImage: `url(${tagIconImg})`,
+                                          WebkitMaskRepeat: "no-repeat",
+                                          maskRepeat: "no-repeat",
+                                          WebkitMaskSize: "contain",
+                                          maskSize: "contain",
+                                          WebkitMaskPosition: "center",
+                                          maskPosition: "center",
+                                        }}
+                                      />
                                       <div className="min-w-0">
-                                        <span className={`font-mono font-bold text-sm tracking-wider border border-dashed rounded px-1.5 py-0.5 ${applicable ? "border-primary/40 text-primary bg-primary/5" : "border-border/60 text-muted-foreground bg-muted/40"}`}>
+                                        <span
+                                          className={`font-mono font-bold text-xs tracking-wider rounded-full px-2.5 py-0.5 text-white ${applicable ? "" : "opacity-60"}`}
+                                          style={{ backgroundColor: "#F05B4E" }}
+                                        >
                                           {coupon.code}
                                         </span>
                                         <p className="text-xs text-muted-foreground mt-0.5 truncate">{coupon.description}</p>
@@ -747,15 +781,16 @@ export function CartDrawer() {
                                     <button
                                       onClick={() => { if (applicable && !isApplied && !isApplyingCoupon) { applyCartCoupon(coupon).then(() => setCouponExpanded(false)); } }}
                                       disabled={!applicable || isApplied || isApplyingCoupon || exhausted}
-                                      className={`ml-3 shrink-0 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1 ${
+                                      className={`ml-3 shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
                                         isApplied
                                           ? "bg-emerald-100 text-emerald-700 cursor-default"
                                           : exhausted
                                             ? "bg-red-50 text-red-400 cursor-not-allowed"
                                             : applicable
-                                              ? "bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                                              ? "text-white"
                                               : "bg-muted text-muted-foreground cursor-not-allowed"
                                       }`}
+                                      style={applicable && !isApplied && !exhausted ? { backgroundColor: "#364F9F" } : undefined}
                                     >
                                       {isApplyingCoupon && applicable && !isApplied ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                                       {isApplied ? "✓ Applied" : exhausted ? "Limit reached" : applicable ? "Apply" : "Locked"}
