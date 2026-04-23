@@ -53,4 +53,16 @@
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+  .dob-input::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0;
+    height: 0;
+  }
+  .dob-input::-webkit-inner-spin-button,
+  .dob-input::-webkit-clear-button {
+    display: none;
+  }
 }

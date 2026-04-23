@@ -17,6 +17,10 @@ import {
 import profileAnim1 from "@/assets/lottie/profile1.json";
 import profileAnim2 from "@/assets/lottie/profile2.json";
 import logoutAnim from "@/assets/lottie/logout.json";
+import iconHomeImg from "@assets/home_1776927604826.png";
+import iconEditImg from "@assets/edit_1776927607777.png";
+import iconBinImg from "@assets/bin_1776927610776.png";
+import iconBriefcaseImg from "@assets/briefcase_1776927648499.png";
 import headerUserImg from "@assets/user_(1)_1774707188827.png";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
 import headerLocationImg from "@assets/placeholder_(1)_1774706943633.png";
@@ -56,9 +60,9 @@ function getFallbackImage(category: string): string {
 }
 
 const TYPE_OPTIONS = [
-  { value: "house" as const, icon: <Home className="w-3.5 h-3.5" />, label: "House" },
-  { value: "office" as const, icon: <Briefcase className="w-3.5 h-3.5" />, label: "Office" },
-  { value: "other" as const, icon: <Tag className="w-3.5 h-3.5" />, label: "Other" },
+  { value: "house" as const, iconImg: iconHomeImg, label: "House" },
+  { value: "office" as const, iconImg: iconBriefcaseImg, label: "Office" },
+  { value: "other" as const, iconImg: null, label: "Other" },
 ];
 
 const addressTypeColors: Record<string, string> = {
@@ -812,15 +816,18 @@ export default function Profile() {
                       type="date"
                       value={draftProfile.dateOfBirth}
                       onChange={e => setDraftProfile(p => ({ ...p, dateOfBirth: e.target.value }))}
-                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                      onClick={(e) => {
+                        const el = e.currentTarget as HTMLInputElement & { showPicker?: () => void };
+                        if (typeof el.showPicker === "function") el.showPicker();
+                      }}
+                      className="dob-input w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors cursor-pointer"
                       data-testid="input-profile-dob"
                     />
                   </div>
                   <div className="flex gap-2 pt-2">
                     <Button
-                      variant="outline"
-                      className="flex-1 rounded-xl border-2 hover:opacity-90"
-                      style={{ borderColor: "#F05B4E", color: "#F05B4E" }}
+                      className="flex-1 rounded-xl text-white hover:opacity-90"
+                      style={{ backgroundColor: "#F05B4E" }}
                       onClick={() => setEditingProfile(false)}
                     >
                       Cancel
@@ -894,7 +901,7 @@ export default function Profile() {
               {showAddressForm && (
                 <div className="space-y-3 mb-5 pb-5 border-b border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-bold text-foreground">{editingAddress ? "Edit Address" : "New Address"}</p>
+                    <p className="text-sm font-medium text-foreground">{editingAddress ? "Edit Address" : "New Address"}</p>
                     <Button variant="ghost" size="icon" onClick={cancelForm} className="w-7 h-7 rounded-full text-muted-foreground">
                       <X className="w-3.5 h-3.5" />
                     </Button>
@@ -984,23 +991,26 @@ export default function Profile() {
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">Address Type</Label>
                     <div className="flex gap-2">
-                      {TYPE_OPTIONS.map(opt => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setAddressForm(f => ({
-                            ...f, type: opt.value,
-                            label: opt.value === "house" ? "Home" : opt.value === "office" ? "Office" : f.label,
-                          }))}
-                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                            addressForm.type === opt.value
-                              ? "bg-primary text-white border-primary"
-                              : "border-border/60 text-muted-foreground hover:border-primary/40"
-                          }`}
-                          data-testid={`button-address-type-${opt.value}`}
-                        >
-                          {opt.icon} {opt.label}
-                        </button>
-                      ))}
+                      {TYPE_OPTIONS.map(opt => {
+                        const selected = addressForm.type === opt.value;
+                        return (
+                          <button
+                            key={opt.value}
+                            onClick={() => setAddressForm(f => ({
+                              ...f, type: opt.value,
+                              label: opt.value === "house" ? "Home" : opt.value === "office" ? "Office" : f.label,
+                            }))}
+                            style={{ backgroundColor: selected ? "#364F9F" : "#F05B4E", borderColor: selected ? "#364F9F" : "#F05B4E" }}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border text-white transition-all hover:opacity-90"
+                            data-testid={`button-address-type-${opt.value}`}
+                          >
+                            {opt.iconImg && (
+                              <img src={opt.iconImg} alt="" className="w-3.5 h-3.5 object-contain brightness-0 invert" />
+                            )}
+                            {opt.label}
+                          </button>
+                        );
+                      })}
                     </div>
                     {addressForm.type === "other" && (
                       <Input
@@ -1025,10 +1035,9 @@ export default function Profile() {
                   </div>
                   <div className="flex gap-2 pt-3">
                     <Button
-                      variant="outline"
                       onClick={cancelForm}
-                      className="flex-1 rounded-xl border-2 hover:opacity-90 font-medium"
-                      style={{ borderColor: "#F05B4E", color: "#F05B4E" }}
+                      className="flex-1 rounded-xl text-white font-medium hover:opacity-90"
+                      style={{ backgroundColor: "#F05B4E" }}
                       data-testid="button-cancel-address"
                     >
                       Cancel
@@ -1059,11 +1068,15 @@ export default function Profile() {
                     <div key={addr.id} className="rounded-2xl border border-border/50 bg-slate-50/50 p-4" data-testid={`card-address-${addr.id}`}>
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-start gap-3 min-w-0">
-                          <div className="mt-0.5 shrink-0">
-                            {addr.type === "house" && <Home className="w-4 h-4 text-muted-foreground" />}
-                            {addr.type === "office" && <Briefcase className="w-4 h-4 text-muted-foreground" />}
-                            {addr.type === "other" && <Tag className="w-4 h-4 text-muted-foreground" />}
-                          </div>
+                          {(addr.type === "house" || addr.type === "office") && (
+                            <div className="mt-0.5 shrink-0">
+                              <img
+                                src={addr.type === "house" ? iconHomeImg : iconBriefcaseImg}
+                                alt=""
+                                className="w-4 h-4 object-contain opacity-70"
+                              />
+                            </div>
+                          )}
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <p className="font-semibold text-sm text-foreground">{addr.name}</p>
@@ -1079,17 +1092,17 @@ export default function Profile() {
                           </div>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full text-muted-foreground hover:text-primary" onClick={() => openEditForm(addr)} data-testid={`button-edit-address-${addr.id}`}>
-                            <Pencil className="w-3.5 h-3.5" />
+                          <Button variant="ghost" size="icon" className="w-7 h-7 rounded-full hover:bg-slate-100" onClick={() => openEditForm(addr)} data-testid={`button-edit-address-${addr.id}`}>
+                            <img src={iconEditImg} alt="Edit" className="w-4 h-4 object-contain opacity-70" />
                           </Button>
                           <Button
                             variant="ghost" size="icon"
-                            className="w-7 h-7 rounded-full text-muted-foreground hover:text-red-500"
+                            className="w-7 h-7 rounded-full hover:bg-slate-100"
                             disabled={deleteAddressMutation.isPending}
                             onClick={() => deleteAddressMutation.mutate(addr.id)}
                             data-testid={`button-delete-address-${addr.id}`}
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <img src={iconBinImg} alt="Delete" className="w-4 h-4 object-contain opacity-70" />
                           </Button>
                         </div>
                       </div>
@@ -1102,15 +1115,18 @@ export default function Profile() {
             {/* Logout button — bottom of Profile & Addresses tab */}
             <button
               onClick={() => setLogoutConfirmOpen(true)}
-              className="w-full bg-white rounded-2xl border border-border/50 shadow-sm px-5 py-4 flex items-center justify-center gap-3 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+              style={{ backgroundColor: "#F05B4E" }}
+              className="w-full rounded-2xl shadow-sm px-5 py-4 flex items-center justify-center gap-3 hover:opacity-90 transition-all"
               data-testid="button-logout"
             >
-              <Lottie
-                animationData={logoutAnim}
-                loop
-                className="w-9 h-9 shrink-0"
-              />
-              <span className="text-base font-medium" style={{ color: "#F05B4E" }}>Logout</span>
+              <div className="w-9 h-9 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
+                <Lottie
+                  animationData={logoutAnim}
+                  loop
+                  className="w-7 h-7"
+                />
+              </div>
+              <span className="text-base font-medium text-white">Logout</span>
             </button>
           </div>
         )}
