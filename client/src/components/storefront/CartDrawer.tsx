@@ -893,14 +893,171 @@ export function CartDrawer() {
                     <div className="px-4 mt-5 mb-2">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4 text-primary" /> Shipping Address
+                          <MapPin className="w-4 h-4" style={{ color: "#364F9F" }} /> Shipping Address
                         </h3>
-                        {customer ? (
-                          <Button size="sm" onClick={openAddForm} className="rounded-full h-8 px-3 text-xs bg-primary text-white gap-1" data-testid="button-add-address">
+                        {customer && !showAddForm ? (
+                          <Button
+                            size="sm"
+                            onClick={openAddForm}
+                            className="rounded-full h-8 px-3 text-xs text-white gap-1 hover:opacity-90"
+                            style={{ backgroundColor: "#364F9F" }}
+                            data-testid="button-add-address"
+                          >
                             <Plus className="w-3 h-3" /> Add Address
                           </Button>
                         ) : null}
                       </div>
+
+                      {/* Inline Add Address form */}
+                      {customer && showAddForm && (
+                        <div className="space-y-3 mb-4 pb-4 border-b border-slate-100">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-medium text-foreground">New Address</p>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => { setShowAddForm(false); setAddForm(emptyForm); }}
+                              className="w-7 h-7 rounded-full text-muted-foreground"
+                              data-testid="button-close-address-form"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Full Name *</Label>
+                              <input
+                                value={addForm.name}
+                                onChange={e => setAddForm(f => ({ ...f, name: e.target.value }))}
+                                placeholder="Recipient name"
+                                className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                                data-testid="input-address-name"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Phone *</Label>
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                maxLength={10}
+                                value={addForm.phone}
+                                onChange={e => setAddForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
+                                placeholder="10-digit mobile"
+                                className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                                data-testid="input-address-phone"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Building / Flat No *</Label>
+                            <input
+                              value={addForm.building}
+                              onChange={e => setAddForm(f => ({ ...f, building: e.target.value }))}
+                              placeholder="Wing A, Flat 302, Building Name"
+                              className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                              data-testid="input-address-building"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Street / Locality</Label>
+                            <input
+                              value={addForm.street}
+                              onChange={e => setAddForm(f => ({ ...f, street: e.target.value }))}
+                              placeholder="Street name or society"
+                              className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                              data-testid="input-address-street"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Area / Suburb *</Label>
+                              <input
+                                value={addForm.area}
+                                onChange={e => setAddForm(f => ({ ...f, area: e.target.value }))}
+                                placeholder="e.g. Thane West"
+                                className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                                data-testid="input-address-area"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs text-muted-foreground">Pincode</Label>
+                              <input
+                                type="tel"
+                                inputMode="numeric"
+                                maxLength={6}
+                                value={addForm.pincode}
+                                onChange={e => setAddForm(f => ({ ...f, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
+                                placeholder="400601"
+                                className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                                data-testid="input-address-pincode"
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-xs text-muted-foreground">Address Type</Label>
+                            <div className="flex gap-2">
+                              {TYPE_OPTIONS.map(opt => {
+                                const selected = addForm.type === opt.value;
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => setAddForm(f => ({
+                                      ...f,
+                                      type: opt.value,
+                                      label: opt.value === "house" ? "Home" : opt.value === "office" ? "Office" : f.label,
+                                    }))}
+                                    style={{ backgroundColor: selected ? "#364F9F" : "#F05B4E", borderColor: selected ? "#364F9F" : "#F05B4E" }}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border text-white transition-all hover:opacity-90"
+                                    data-testid={`button-address-type-${opt.value}`}
+                                  >
+                                    {opt.icon} {opt.label}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            {addForm.type === "other" && (
+                              <input
+                                value={addForm.label}
+                                onChange={e => setAddForm(f => ({ ...f, label: e.target.value }))}
+                                placeholder='Custom label (e.g. "Parents Home")'
+                                className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                                data-testid="input-address-custom-label"
+                              />
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs text-muted-foreground">Delivery Instructions</Label>
+                            <input
+                              type="text"
+                              value={addForm.instructions}
+                              onChange={e => setAddForm(f => ({ ...f, instructions: e.target.value }))}
+                              placeholder="Leave at door, ring bell twice, etc."
+                              className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                              data-testid="input-address-instructions"
+                            />
+                          </div>
+                          <div className="flex gap-2 pt-3">
+                            <Button
+                              onClick={() => { setShowAddForm(false); setAddForm(emptyForm); }}
+                              className="flex-1 rounded-xl text-white font-medium hover:opacity-90"
+                              style={{ backgroundColor: "#F05B4E" }}
+                              data-testid="button-cancel-address"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={saveAddress}
+                              disabled={isSavingAddress}
+                              className="flex-1 rounded-xl text-white font-medium hover:opacity-90"
+                              style={{ backgroundColor: "#364F9F" }}
+                              data-testid="button-save-address"
+                            >
+                              {isSavingAddress ? <><Loader2 className="w-4 h-4 animate-spin mr-2 inline" />Saving...</> : "Save Address"}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
 
                       {!customer ? (
                         <button
@@ -1106,8 +1263,8 @@ export function CartDrawer() {
         </SheetContent>
       </Sheet>
 
-      {/* Add Address Dialog */}
-      <Dialog open={showAddForm} onOpenChange={setShowAddForm}>
+      {/* Add Address Dialog (deprecated - now inline in drawer) */}
+      <Dialog open={false} onOpenChange={setShowAddForm}>
         <DialogContent className="max-w-2xl w-full rounded-2xl p-0 gap-0 flex flex-col max-h-[92vh]">
           <DialogHeader className="px-6 py-5 border-b border-border/30 shrink-0">
             <DialogTitle className="text-xl font-bold text-foreground flex items-center gap-2">
