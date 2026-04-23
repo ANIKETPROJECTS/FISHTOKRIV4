@@ -518,14 +518,14 @@ export function CartDrawer() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto scrollbar-hide">
                     {savedTotal > 0 && (
-                      <div className="mx-4 mt-4 flex items-center justify-center gap-2 px-2 py-1.5">
+                      <div className="mx-4 mt-1 flex items-center justify-center gap-1 px-2">
                         <Lottie
                           animationData={popperAnim}
                           loop
                           autoplay
-                          style={{ width: 56, height: 56 }}
+                          style={{ width: 72, height: 72, flexShrink: 0 }}
                         />
-                        <p className="text-sm font-semibold">
+                        <p className="text-sm font-semibold leading-none">
                           <span style={{ color: "#F05B4E" }}>Congratulations!</span>
                           <span style={{ color: "#364F9F" }}> You've saved ₹{savedTotal}</span>
                         </p>
@@ -566,18 +566,27 @@ export function CartDrawer() {
                           </div>
                           {expandedInstructions[item.id] ? (
                             <div className="px-3 pb-3 flex items-center gap-2">
-                              <img
-                                src={notesIconImg}
-                                alt=""
-                                className="w-3.5 h-3.5 object-contain shrink-0"
-                                style={{ filter: "invert(48%) sepia(85%) saturate(2200%) hue-rotate(360deg) brightness(98%) contrast(92%)" }}
+                              <span
+                                aria-hidden
+                                className="w-5 h-5 shrink-0 inline-block"
+                                style={{
+                                  backgroundColor: "#364F9F",
+                                  WebkitMaskImage: `url(${notesIconImg})`,
+                                  maskImage: `url(${notesIconImg})`,
+                                  WebkitMaskRepeat: "no-repeat",
+                                  maskRepeat: "no-repeat",
+                                  WebkitMaskSize: "contain",
+                                  maskSize: "contain",
+                                  WebkitMaskPosition: "center",
+                                  maskPosition: "center",
+                                }}
                               />
                               <input
                                 type="text"
                                 value={item.instruction || ""}
                                 onChange={e => updateInstruction(item.id, e.target.value)}
                                 placeholder="e.g. Thin sliced, curry cut, remove skin..."
-                                className="flex-1 h-7 text-xs bg-transparent border-0 border-b border-border/50 focus:border-orange-500 focus:outline-none focus:ring-0 px-0"
+                                className="flex-1 h-7 text-xs bg-transparent border-0 border-b border-border/50 focus:border-[#364F9F] focus:outline-none focus:ring-0 px-0"
                                 autoFocus
                                 data-testid={`input-instruction-${item.id}`}
                               />
@@ -585,15 +594,24 @@ export function CartDrawer() {
                           ) : (
                             <button
                               className="w-full px-3 pb-2.5 flex items-center gap-1.5 text-xs font-medium"
-                              style={{ color: "#F97316" }}
+                              style={{ color: "#364F9F" }}
                               onClick={() => setExpandedInstructions(p => ({ ...p, [item.id]: true }))}
                               data-testid={`button-add-instruction-${item.id}`}
                             >
-                              <img
-                                src={notesIconImg}
-                                alt=""
-                                className="w-3.5 h-3.5 object-contain"
-                                style={{ filter: "invert(48%) sepia(85%) saturate(2200%) hue-rotate(360deg) brightness(98%) contrast(92%)" }}
+                              <span
+                                aria-hidden
+                                className="w-5 h-5 shrink-0 inline-block"
+                                style={{
+                                  backgroundColor: "#364F9F",
+                                  WebkitMaskImage: `url(${notesIconImg})`,
+                                  maskImage: `url(${notesIconImg})`,
+                                  WebkitMaskRepeat: "no-repeat",
+                                  maskRepeat: "no-repeat",
+                                  WebkitMaskSize: "contain",
+                                  maskSize: "contain",
+                                  WebkitMaskPosition: "center",
+                                  maskPosition: "center",
+                                }}
                               />
                               {item.instruction
                                 ? <span className="text-muted-foreground truncate">"{item.instruction}"</span>
