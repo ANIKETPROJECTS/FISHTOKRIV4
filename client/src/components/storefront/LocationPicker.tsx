@@ -246,24 +246,30 @@ export function LocationPicker() {
   const geoCfg = geoStatus !== "idle" ? geoConfigs[geoStatus as keyof typeof geoConfigs] : null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[300] flex items-stretch sm:items-center justify-end sm:justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closePicker} />
 
-      {/* Main panel — much bigger on desktop */}
-      <div className="relative bg-white w-full sm:max-w-xl rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 duration-200 max-h-[92vh] sm:max-h-[80vh]">
+      {/* Main panel — full screen slide-from-right on mobile, centered modal on desktop */}
+      <div className="relative bg-white w-full h-full sm:h-auto sm:max-w-xl rounded-none sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-right sm:slide-in-from-bottom-0 duration-300 sm:duration-200 max-h-screen sm:max-h-[80vh]">
 
         {/* Header */}
-        <div className="flex items-center gap-3 px-5 pt-5 pb-3 border-b border-border/30 shrink-0">
+        <div className="flex items-start gap-3 px-5 pt-5 pb-3 border-b border-border/30 shrink-0">
           {step === "sub" && (
-            <button onClick={() => setStep("super")} className="p-1.5 rounded-full hover:bg-muted transition-colors" data-testid="button-location-back">
+            <button onClick={() => setStep("super")} className="p-1.5 rounded-full hover:bg-muted transition-colors mt-0.5" data-testid="button-location-back">
               <ChevronLeft className="w-5 h-5 text-muted-foreground" />
             </button>
           )}
           <div className="flex-1">
             <h2 className="text-base font-bold text-foreground leading-tight">Select a location</h2>
             <p className="text-xs text-muted-foreground mt-0.5">Search your area or use current location</p>
+            <div className="flex items-center gap-1.5 mt-2 text-primary">
+              <MapPin className="w-3.5 h-3.5" />
+              <span className="text-xs font-medium">
+                {selectedSubHub ? selectedSubHub.name : selectedSuperHub ? selectedSuperHub.name : "No area selected"}
+              </span>
+            </div>
           </div>
-          <button onClick={closePicker} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground" data-testid="button-location-close">
+          <button onClick={closePicker} className="p-1.5 rounded-full hover:bg-muted transition-colors text-muted-foreground mt-0.5" data-testid="button-location-close">
             <X className="w-4 h-4" />
           </button>
         </div>

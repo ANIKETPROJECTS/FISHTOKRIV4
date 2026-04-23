@@ -4,7 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useCustomer } from "@/context/CustomerContext";
 import { useHub } from "@/context/HubContext";
 import { Button } from "@/components/ui/button";
-import { X, ChevronDown, Mic, MicOff } from "lucide-react";
+import { ChevronDown, Mic, MicOff } from "lucide-react";
 import { CategoryMenuDropdown } from "@/components/storefront/CategoryMenu";
 import { OtpModal } from "@/components/storefront/OtpModal";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
@@ -78,7 +78,6 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
   const { customer } = useCustomer();
   const { selectedSubHub, selectedSuperHub, openPicker } = useHub();
   const [, navigate] = useLocation();
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
@@ -133,7 +132,7 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
         {/* Left: Logo */}
         <div className="flex items-center shrink-0">
           <Link href="/" className="flex items-center group">
-            <FishTokriLogo className="h-10 sm:h-11 w-auto" />
+            <FishTokriLogo className="h-8 sm:h-11 w-auto" />
           </Link>
         </div>
 
@@ -173,23 +172,6 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
 
         {/* Right: Icons */}
         <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
-          {/* Mobile search icon */}
-          {onSearch && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="sm:hidden text-foreground hover:bg-accent/10 rounded-full w-9 h-9"
-              onClick={() => setMobileSearchOpen(v => !v)}
-              aria-label="Search"
-              data-testid="button-mobile-search"
-            >
-              {mobileSearchOpen
-                ? <X className="w-5 h-5" />
-                : <img src={searchImg} alt="Search" className="w-5 h-5 object-contain" />
-              }
-            </Button>
-          )}
-
           {/* Category menu icon */}
           <Button
             variant="ghost"
@@ -252,18 +234,23 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
         onClose={() => setCategoryMenuOpen(false)}
       />
 
-      {/* Mobile expandable search */}
-      {onSearch && mobileSearchOpen && (
-        <div className="sm:hidden px-3 pb-2.5 pt-2 border-t border-border/20 bg-white/95 backdrop-blur-sm">
+      {/* Mobile pill search — always visible below header, mirrors desktop */}
+      {onSearch && (
+        <div className="sm:hidden px-3 pb-2.5 pt-1 bg-white/95 backdrop-blur-sm">
           <div className="relative">
             <img src={searchImg} alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 object-contain z-10" />
+            {!searchValue && !searchFocused && (
+              <div className="absolute left-10 top-1/2 -translate-y-1/2 z-10">
+                <TypewriterPlaceholder />
+              </div>
+            )}
             <input
               type="search"
-              placeholder="Search for fresh seafood..."
-              className="w-full pl-10 pr-10 h-9 rounded-full bg-white border border-slate-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 text-sm"
-              onChange={(e) => { setSearchValue(e.target.value); onSearch(e.target.value); }}
               value={searchValue}
-              autoFocus
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+              onChange={(e) => { setSearchValue(e.target.value); onSearch(e.target.value); }}
+              className="w-full pl-10 pr-10 h-10 rounded-full bg-white border border-slate-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 text-sm transition-all"
               data-testid="input-search-mobile"
             />
             <button
