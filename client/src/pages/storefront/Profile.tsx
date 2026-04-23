@@ -623,7 +623,12 @@ export default function Profile() {
 
   const openAddForm = () => {
     setEditingAddress(null);
-    setAddressForm(emptyAddress);
+    const isFirstAddress = (customer?.addresses?.length || 0) === 0;
+    setAddressForm({
+      ...emptyAddress,
+      name: isFirstAddress ? (customer?.name || "") : "",
+      phone: isFirstAddress ? (customer?.phone || "") : "",
+    });
     setUseAccountDetails(false);
     setShowAddressForm(true);
   };
@@ -868,10 +873,14 @@ export default function Profile() {
                   ].map(({ label, value, verified }) => (
                     <div key={label} className="py-3">
                       <p className="text-xs text-muted-foreground mb-0.5">{label}</p>
-                      {value
-                        ? <p className="font-bold text-foreground">{value}</p>
-                        : <p className="font-normal italic text-muted-foreground text-sm">Not set</p>}
-                      {verified && <p className="text-xs text-emerald-600 flex items-center gap-1 mt-0.5"><CheckCircle2 className="w-3 h-3" /> Verified</p>}
+                      <div className="flex items-center justify-between gap-2">
+                        {value
+                          ? <p className="font-medium text-foreground">{value}</p>
+                          : <p className="font-normal italic text-muted-foreground text-sm">Not set</p>}
+                        {verified && value && (
+                          <span className="text-xs font-medium text-emerald-600 shrink-0">Verified</span>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -906,15 +915,6 @@ export default function Profile() {
                       <X className="w-3.5 h-3.5" />
                     </Button>
                   </div>
-                  {customer.name && (
-                    <div className="flex items-start gap-3 bg-slate-50 rounded-xl p-3 border border-border/40">
-                      <Checkbox id="use-account-profile" checked={useAccountDetails} onCheckedChange={v => handleUseAccountDetails(!!v)} className="mt-0.5" />
-                      <div>
-                        <label htmlFor="use-account-profile" className="text-sm font-semibold text-foreground cursor-pointer">Use my account details</label>
-                        <p className="text-xs text-muted-foreground mt-0.5">{customer.name} · {customer.phone}</p>
-                      </div>
-                    </div>
-                  )}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Full Name *</Label>
@@ -938,9 +938,6 @@ export default function Profile() {
                         className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
                         data-testid="input-address-phone"
                       />
-                      {addressForm.phone && !/^[6-9]\d{9}$/.test(addressForm.phone) && (
-                        <p className="text-[10px] mt-0.5" style={{ color: "#F05B4E" }}>Enter a valid 10-digit number</p>
-                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
@@ -1024,12 +1021,12 @@ export default function Profile() {
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Delivery Instructions</Label>
-                    <textarea
+                    <input
+                      type="text"
                       value={addressForm.instructions}
                       onChange={e => setAddressForm(f => ({ ...f, instructions: e.target.value }))}
                       placeholder="Leave at door, ring bell twice, etc."
-                      rows={2}
-                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm resize-none transition-colors"
+                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
                       data-testid="input-address-instructions"
                     />
                   </div>
@@ -1116,17 +1113,16 @@ export default function Profile() {
             <button
               onClick={() => setLogoutConfirmOpen(true)}
               style={{ backgroundColor: "#F05B4E" }}
-              className="w-full rounded-2xl shadow-sm px-5 py-4 flex items-center justify-center gap-3 hover:opacity-90 transition-all"
+              className="w-full rounded-xl shadow-sm px-5 py-2.5 flex items-center justify-center gap-2 hover:opacity-90 transition-all"
               data-testid="button-logout"
             >
-              <div className="w-9 h-9 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
-                <Lottie
-                  animationData={logoutAnim}
-                  loop
-                  className="w-7 h-7"
-                />
-              </div>
-              <span className="text-base font-medium text-white">Logout</span>
+              <Lottie
+                animationData={logoutAnim}
+                loop
+                className="w-6 h-6 shrink-0"
+                style={{ filter: "brightness(0) invert(1)" }}
+              />
+              <span className="text-sm font-medium text-white">Logout</span>
             </button>
           </div>
         )}
