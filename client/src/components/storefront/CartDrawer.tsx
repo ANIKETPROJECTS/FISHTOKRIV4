@@ -10,6 +10,10 @@ import {
 import popperAnim from "@/assets/lottie/popper.json";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
 import iconBinImg from "@assets/bin_1776927610776.png";
+import iconHomeTypeImg from "@assets/home_1776927604826.png";
+import iconBriefcaseImg from "@assets/briefcase_1776927648499.png";
+import iconShippingHomeImg from "@assets/home_(1)_1776948949645.png";
+import iconTimeImg from "@assets/time_1776949603776.png";
 import notesIconImg from "@/assets/notes.png";
 import giftCardIconImg from "@/assets/gift-card.png";
 import tagIconImg from "@/assets/tag.png";
@@ -46,9 +50,9 @@ const addressTypeColors: Record<string, string> = {
 };
 
 const TYPE_OPTIONS = [
-  { value: "house" as const, icon: <Home className="w-3.5 h-3.5" />, label: "House" },
-  { value: "office" as const, icon: <Briefcase className="w-3.5 h-3.5" />, label: "Office" },
-  { value: "other" as const, icon: <Tag className="w-3.5 h-3.5" />, label: "Other" },
+  { value: "house" as const, iconImg: iconHomeTypeImg, icon: null, label: "House" },
+  { value: "office" as const, iconImg: iconBriefcaseImg, icon: null, label: "Office" },
+  { value: "other" as const, iconImg: null, icon: <Tag className="w-3.5 h-3.5" />, label: "Other" },
 ];
 
 const emptyForm = {
@@ -893,7 +897,22 @@ export function CartDrawer() {
                     <div className="px-4 mt-5 mb-2">
                       <div className="flex items-center justify-between mb-3">
                         <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
-                          <MapPin className="w-4 h-4" style={{ color: "#364F9F" }} /> Shipping Address
+                          <span
+                            aria-hidden
+                            className="w-4 h-4 inline-block"
+                            style={{
+                              backgroundColor: "#364F9F",
+                              WebkitMaskImage: `url(${iconShippingHomeImg})`,
+                              maskImage: `url(${iconShippingHomeImg})`,
+                              WebkitMaskRepeat: "no-repeat",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskSize: "contain",
+                              maskSize: "contain",
+                              WebkitMaskPosition: "center",
+                              maskPosition: "center",
+                            }}
+                          />
+                          Shipping Address
                         </h3>
                         {customer && !showAddForm ? (
                           <Button
@@ -1011,7 +1030,11 @@ export function CartDrawer() {
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border text-white transition-all hover:opacity-90"
                                     data-testid={`button-address-type-${opt.value}`}
                                   >
-                                    {opt.icon} {opt.label}
+                                    {opt.iconImg ? (
+                                      <img src={opt.iconImg} alt="" className="w-3.5 h-3.5 object-contain brightness-0 invert" />
+                                    ) : (
+                                      opt.icon
+                                    )} {opt.label}
                                   </button>
                                 );
                               })}
@@ -1106,41 +1129,35 @@ export function CartDrawer() {
                       )}
                     </div>
 
-                    {/* Delivery Time Slot — collapsible */}
-                    <div className="mx-4 mt-4 border border-border/40 rounded-2xl overflow-hidden">
-                      <button
-                        type="button"
-                        onClick={() => setTimeslotExpanded(s => !s)}
-                        className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20 hover:bg-muted/30 transition-colors"
-                        data-testid="button-toggle-timeslot"
-                      >
-                        {selectedTimeslot?.isInstant
-                          ? <Zap className="w-4 h-4 text-amber-500 shrink-0" />
-                          : <Clock className="w-4 h-4 text-primary shrink-0" />}
-                        <div className="flex-1 text-left min-w-0">
-                          {selectedTimeslot ? (
-                            <span className={`text-sm font-semibold ${selectedTimeslot.isInstant ? "text-amber-700" : "text-foreground"}`}>
-                              {selectedTimeslot.label}
-                              {selectedTimeslot.startTime && selectedTimeslot.endTime && (
-                                <span className="font-normal text-muted-foreground"> · {selectedTimeslot.startTime}–{selectedTimeslot.endTime}</span>
-                              )}
-                            </span>
-                          ) : (
-                            <span className="text-sm font-semibold text-primary">Select delivery time slot</span>
-                          )}
-                        </div>
+                    {/* Delivery Time Slot */}
+                    <div className="px-4 mt-5 mb-2">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="font-semibold text-foreground text-sm flex items-center gap-1.5">
+                          <span
+                            aria-hidden
+                            className="w-4 h-4 inline-block"
+                            style={{
+                              backgroundColor: "#364F9F",
+                              WebkitMaskImage: `url(${iconTimeImg})`,
+                              maskImage: `url(${iconTimeImg})`,
+                              WebkitMaskRepeat: "no-repeat",
+                              maskRepeat: "no-repeat",
+                              WebkitMaskSize: "contain",
+                              maskSize: "contain",
+                              WebkitMaskPosition: "center",
+                              maskPosition: "center",
+                            }}
+                          />
+                          Select Time Slot
+                        </h3>
                         {selectedTimeslot && (
                           selectedTimeslot.isInstant && (selectedTimeslot.extraCharge ?? 0) > 0
-                            ? <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full mr-1">+₹{selectedTimeslot.extraCharge}</span>
-                            : <span className="text-xs font-semibold text-emerald-600 mr-1">FREE</span>
+                            ? <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">+₹{selectedTimeslot.extraCharge}</span>
+                            : <span className="text-xs font-semibold text-emerald-600">FREE</span>
                         )}
-                        {timeslotExpanded
-                          ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
-                          : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-                      </button>
+                      </div>
 
-                      {timeslotExpanded && (
-                        <div className="border-t border-border/20 p-3 space-y-2">
+                      <div className="space-y-2">
                           {timeslotsLoading ? (
                             <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
                               <Loader2 className="w-4 h-4 animate-spin" /> Loading slots...
@@ -1189,7 +1206,6 @@ export function CartDrawer() {
                             ))
                           )}
                         </div>
-                      )}
                     </div>
 
                     {/* Payment Method */}
