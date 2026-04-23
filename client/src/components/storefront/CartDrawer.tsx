@@ -10,6 +10,7 @@ import {
 import popperAnim from "@/assets/lottie/popper.json";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
 import iconBinImg from "@assets/bin_1776927610776.png";
+import notesIconImg from "@/assets/notes.png";
 import { useCart } from "@/context/CartContext";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCustomer } from "@/context/CustomerContext";
@@ -522,7 +523,7 @@ export function CartDrawer() {
                           animationData={popperAnim}
                           loop
                           autoplay
-                          style={{ width: 36, height: 36 }}
+                          style={{ width: 56, height: 56 }}
                         />
                         <p className="text-sm font-semibold">
                           <span style={{ color: "#F05B4E" }}>Congratulations!</span>
@@ -535,7 +536,7 @@ export function CartDrawer() {
                       {items.map(item => (
                         <div key={item.id} className="overflow-hidden" data-testid={`cart-item-${item.id}`}>
                           <div className="flex items-center gap-3 p-3">
-                            <div className="w-14 h-14 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                            <div className="w-20 h-20 overflow-hidden flex-shrink-0 flex items-center justify-center">
                               <img src={item.imageUrl || getFallbackImage(item.category)} alt={item.name} className="w-full h-full object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -564,26 +565,39 @@ export function CartDrawer() {
                             </div>
                           </div>
                           {expandedInstructions[item.id] ? (
-                            <div className="px-3 pb-3">
-                              <Input
+                            <div className="px-3 pb-3 flex items-center gap-2">
+                              <img
+                                src={notesIconImg}
+                                alt=""
+                                className="w-3.5 h-3.5 object-contain shrink-0"
+                                style={{ filter: "invert(48%) sepia(85%) saturate(2200%) hue-rotate(360deg) brightness(98%) contrast(92%)" }}
+                              />
+                              <input
+                                type="text"
                                 value={item.instruction || ""}
                                 onChange={e => updateInstruction(item.id, e.target.value)}
                                 placeholder="e.g. Thin sliced, curry cut, remove skin..."
-                                className="h-8 text-xs rounded-lg border-border/50 bg-slate-50"
+                                className="flex-1 h-7 text-xs bg-transparent border-0 border-b border-border/50 focus:border-orange-500 focus:outline-none focus:ring-0 px-0"
                                 autoFocus
                                 data-testid={`input-instruction-${item.id}`}
                               />
                             </div>
                           ) : (
                             <button
-                              className="w-full px-3 pb-2.5 flex items-center gap-1.5 text-xs text-primary/70 hover:text-primary font-medium"
+                              className="w-full px-3 pb-2.5 flex items-center gap-1.5 text-xs font-medium"
+                              style={{ color: "#F97316" }}
                               onClick={() => setExpandedInstructions(p => ({ ...p, [item.id]: true }))}
                               data-testid={`button-add-instruction-${item.id}`}
                             >
-                              <ClipboardList className="w-3 h-3" />
+                              <img
+                                src={notesIconImg}
+                                alt=""
+                                className="w-3.5 h-3.5 object-contain"
+                                style={{ filter: "invert(48%) sepia(85%) saturate(2200%) hue-rotate(360deg) brightness(98%) contrast(92%)" }}
+                              />
                               {item.instruction
                                 ? <span className="text-muted-foreground truncate">"{item.instruction}"</span>
-                                : "+ Add cooking instructions"}
+                                : "Add Instruction"}
                             </button>
                           )}
                         </div>
