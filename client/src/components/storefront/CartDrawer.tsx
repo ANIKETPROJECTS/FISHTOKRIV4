@@ -502,7 +502,7 @@ export function CartDrawer() {
               <div className="pointer-events-none absolute inset-0 z-0">
                 <Lottie animationData={confettiAnim} loop autoplay style={{ width: "100%", height: "100%" }} />
               </div>
-              <div className="relative z-10 mt-2 mb-4">
+              <div className="relative z-10 mt-12 mb-10">
                 <FishTokriLogo className="h-16 w-auto" />
               </div>
               <div className="relative z-10 w-40 h-40 -mb-2">
