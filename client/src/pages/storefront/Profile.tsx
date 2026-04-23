@@ -17,6 +17,9 @@ import {
 import profileAnim1 from "@/assets/lottie/profile1.json";
 import profileAnim2 from "@/assets/lottie/profile2.json";
 import logoutAnim from "@/assets/lottie/logout.json";
+import headerUserImg from "@assets/user_(1)_1774707188827.png";
+import headerCartImg from "@assets/shopping-bag_1774706595493.png";
+import headerLocationImg from "@assets/placeholder_(1)_1774706943633.png";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -653,6 +656,10 @@ export default function Profile() {
       toast({ title: "Please fill all required fields", variant: "destructive" });
       return;
     }
+    if (!/^[6-9]\d{9}$/.test(addressForm.phone.trim())) {
+      toast({ title: "Enter a valid 10-digit mobile number", variant: "destructive" });
+      return;
+    }
     const label = addressForm.type === "other"
       ? (addressForm.label || "Other")
       : addressForm.type === "house" ? "Home" : "Office";
@@ -734,23 +741,27 @@ export default function Profile() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-white rounded-2xl p-1 border border-border/40 shadow-sm mb-6">
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-sm font-semibold transition-all ${
-                activeTab === tab
-                  ? "bg-primary text-white shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-              data-testid={`tab-${tab.toLowerCase().replace(/\s+/g, "-")}`}
-            >
-              {tab === "Profile & Addresses" && <User className="w-3.5 h-3.5" />}
-              {tab === "My Orders" && <ShoppingBag className="w-3.5 h-3.5" />}
-              {tab}
-            </button>
-          ))}
+        <div className="flex gap-2 mb-6">
+          {TABS.map(tab => {
+            const isActive = activeTab === tab;
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{ backgroundColor: isActive ? "#364F9F" : "#F05B4E" }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium text-white shadow-sm transition-all hover:opacity-90"
+                data-testid={`tab-${tab.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+                {tab === "Profile & Addresses" && (
+                  <img src={headerUserImg} alt="" className="w-4 h-4 object-contain brightness-0 invert" />
+                )}
+                {tab === "My Orders" && (
+                  <img src={headerCartImg} alt="" className="w-4 h-4 object-contain brightness-0 invert" />
+                )}
+                {tab}
+              </button>
+            );
+          })}
         </div>
 
         {/* ── Profile & Addresses Tab ── */}
@@ -759,8 +770,8 @@ export default function Profile() {
             <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-foreground" />
-                  <h2 className="text-base font-bold text-foreground">Profile Details</h2>
+                  <img src={headerUserImg} alt="" className="w-5 h-5 object-contain" />
+                  <h2 className="text-base font-medium text-foreground">Profile Details</h2>
                 </div>
                 {!editingProfile && (
                   <Button
@@ -769,7 +780,7 @@ export default function Profile() {
                       setDraftProfile({ name: customer.name || "", email: customer.email || "", dateOfBirth: customer.dateOfBirth || "" });
                       setEditingProfile(true);
                     }}
-                    className="rounded-full text-muted-foreground hover:text-primary"
+                    className="rounded-full text-muted-foreground hover:text-[#364F9F]"
                     data-testid="button-edit-profile"
                   >
                     <Pencil className="w-4 h-4" />
@@ -778,42 +789,57 @@ export default function Profile() {
               </div>
 
               {editingProfile ? (
-                <div className="space-y-3">
+                <div className="space-y-5">
                   {([
-                    { field: "name" as const, label: "Full Name", placeholder: "Your name" },
-                    { field: "email" as const, label: "Email", placeholder: "you@example.com" },
-                  ] as const).map(({ field, label, placeholder }) => (
+                    { field: "name" as const, label: "Full Name", placeholder: "Your name", type: "text" },
+                    { field: "email" as const, label: "Email", placeholder: "you@example.com", type: "email" },
+                  ] as const).map(({ field, label, placeholder, type }) => (
                     <div key={field} className="space-y-1">
                       <Label className="text-xs text-muted-foreground">{label}</Label>
-                      <Input
+                      <input
+                        type={type}
                         value={draftProfile[field]}
                         onChange={e => setDraftProfile(p => ({ ...p, [field]: e.target.value }))}
                         placeholder={placeholder}
-                        className="rounded-xl border-border/60"
+                        className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
                         data-testid={`input-profile-${field}`}
                       />
                     </div>
                   ))}
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Date of Birth</Label>
-                    <Input
+                    <input
                       type="date"
                       value={draftProfile.dateOfBirth}
                       onChange={e => setDraftProfile(p => ({ ...p, dateOfBirth: e.target.value }))}
-                      className="rounded-xl border-border/60"
+                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
                       data-testid="input-profile-dob"
                     />
                   </div>
-                  <div className="flex gap-2 pt-1">
-                    <Button variant="outline" className="flex-1 rounded-xl" onClick={() => setEditingProfile(false)}>Cancel</Button>
+                  <div className="flex gap-2 pt-2">
                     <Button
-                      className="flex-1 rounded-xl bg-primary text-white"
+                      variant="outline"
+                      className="flex-1 rounded-xl border-2 hover:opacity-90"
+                      style={{ borderColor: "#F05B4E", color: "#F05B4E" }}
+                      onClick={() => setEditingProfile(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="flex-1 rounded-xl text-white hover:opacity-90"
+                      style={{ backgroundColor: "#364F9F" }}
                       disabled={updateProfileMutation.isPending}
-                      onClick={() => updateProfileMutation.mutate({
-                        name: draftProfile.name || null,
-                        email: draftProfile.email || null,
-                        dateOfBirth: draftProfile.dateOfBirth || null,
-                      })}
+                      onClick={() => {
+                        if (draftProfile.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(draftProfile.email.trim())) {
+                          toast({ title: "Enter a valid email address", variant: "destructive" });
+                          return;
+                        }
+                        updateProfileMutation.mutate({
+                          name: draftProfile.name || null,
+                          email: draftProfile.email || null,
+                          dateOfBirth: draftProfile.dateOfBirth || null,
+                        });
+                      }}
                       data-testid="button-save-profile"
                     >
                       {updateProfileMutation.isPending ? "Saving..." : "Save"}
@@ -849,14 +875,15 @@ export default function Profile() {
             <div className="bg-white rounded-2xl border border-border/50 shadow-sm p-6">
               <div className="flex items-center justify-between mb-5">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-foreground" />
-                  <h2 className="text-base font-bold text-foreground">Saved Addresses</h2>
+                  <img src={headerLocationImg} alt="" className="w-5 h-5 object-contain" />
+                  <h2 className="text-base font-medium text-foreground">Saved Addresses</h2>
                 </div>
                 {!showAddressForm ? (
                   <Button
                     variant="ghost" size="sm"
                     onClick={openAddForm}
-                    className="gap-1.5 text-primary hover:text-primary rounded-xl text-xs"
+                    className="gap-1.5 rounded-xl text-xs hover:opacity-90"
+                    style={{ color: "#364F9F" }}
                     data-testid="button-add-address"
                   >
                     <Plus className="w-3.5 h-3.5" /> Add Address
@@ -881,32 +908,77 @@ export default function Profile() {
                       </div>
                     </div>
                   )}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Full Name *</Label>
-                      <Input value={addressForm.name} onChange={e => setAddressForm(f => ({ ...f, name: e.target.value }))} placeholder="Recipient name" className="rounded-xl border-border/60" data-testid="input-address-name" />
+                      <input
+                        value={addressForm.name}
+                        onChange={e => setAddressForm(f => ({ ...f, name: e.target.value }))}
+                        placeholder="Recipient name"
+                        className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                        data-testid="input-address-name"
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Phone *</Label>
-                      <Input value={addressForm.phone} onChange={e => setAddressForm(f => ({ ...f, phone: e.target.value }))} placeholder="Phone number" className="rounded-xl border-border/60" data-testid="input-address-phone" />
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
+                        value={addressForm.phone}
+                        onChange={e => setAddressForm(f => ({ ...f, phone: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
+                        placeholder="10-digit mobile"
+                        className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                        data-testid="input-address-phone"
+                      />
+                      {addressForm.phone && !/^[6-9]\d{9}$/.test(addressForm.phone) && (
+                        <p className="text-[10px] mt-0.5" style={{ color: "#F05B4E" }}>Enter a valid 10-digit number</p>
+                      )}
                     </div>
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Building / Flat No *</Label>
-                    <Input value={addressForm.building} onChange={e => setAddressForm(f => ({ ...f, building: e.target.value }))} placeholder="Wing A, Flat 302, Building Name" className="rounded-xl border-border/60" data-testid="input-address-building" />
+                    <input
+                      value={addressForm.building}
+                      onChange={e => setAddressForm(f => ({ ...f, building: e.target.value }))}
+                      placeholder="Wing A, Flat 302, Building Name"
+                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                      data-testid="input-address-building"
+                    />
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Street / Locality</Label>
-                    <Input value={addressForm.street} onChange={e => setAddressForm(f => ({ ...f, street: e.target.value }))} placeholder="Street name or society" className="rounded-xl border-border/60" data-testid="input-address-street" />
+                    <input
+                      value={addressForm.street}
+                      onChange={e => setAddressForm(f => ({ ...f, street: e.target.value }))}
+                      placeholder="Street name or society"
+                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                      data-testid="input-address-street"
+                    />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Area / Suburb *</Label>
-                      <Input value={addressForm.area} onChange={e => setAddressForm(f => ({ ...f, area: e.target.value }))} placeholder="e.g. Thane West" className="rounded-xl border-border/60" data-testid="input-address-area" />
+                      <input
+                        value={addressForm.area}
+                        onChange={e => setAddressForm(f => ({ ...f, area: e.target.value }))}
+                        placeholder="e.g. Thane West"
+                        className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                        data-testid="input-address-area"
+                      />
                     </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Pincode</Label>
-                      <Input value={addressForm.pincode} onChange={e => setAddressForm(f => ({ ...f, pincode: e.target.value }))} placeholder="400601" className="rounded-xl border-border/60" data-testid="input-address-pincode" />
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={addressForm.pincode}
+                        onChange={e => setAddressForm(f => ({ ...f, pincode: e.target.value.replace(/\D/g, "").slice(0, 6) }))}
+                        placeholder="400601"
+                        className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm transition-colors"
+                        data-testid="input-address-pincode"
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -942,23 +1014,35 @@ export default function Profile() {
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Delivery Instructions</Label>
-                    <Textarea
+                    <textarea
                       value={addressForm.instructions}
                       onChange={e => setAddressForm(f => ({ ...f, instructions: e.target.value }))}
                       placeholder="Leave at door, ring bell twice, etc."
-                      className="rounded-xl border-border/60 text-sm resize-none"
                       rows={2}
+                      className="w-full bg-transparent border-0 border-b border-border/60 focus:border-[#364F9F] focus:outline-none px-0 py-1.5 text-sm resize-none transition-colors"
                       data-testid="input-address-instructions"
                     />
                   </div>
-                  <Button
-                    onClick={saveAddress}
-                    disabled={addAddressMutation.isPending || updateAddressMutation.isPending}
-                    className="w-full rounded-xl bg-primary text-white font-semibold"
-                    data-testid="button-save-address"
-                  >
-                    {(addAddressMutation.isPending || updateAddressMutation.isPending) ? "Saving..." : editingAddress ? "Update Address" : "Save Address"}
-                  </Button>
+                  <div className="flex gap-2 pt-3">
+                    <Button
+                      variant="outline"
+                      onClick={cancelForm}
+                      className="flex-1 rounded-xl border-2 hover:opacity-90 font-medium"
+                      style={{ borderColor: "#F05B4E", color: "#F05B4E" }}
+                      data-testid="button-cancel-address"
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={saveAddress}
+                      disabled={addAddressMutation.isPending || updateAddressMutation.isPending}
+                      className="flex-1 rounded-xl text-white font-medium hover:opacity-90"
+                      style={{ backgroundColor: "#364F9F" }}
+                      data-testid="button-save-address"
+                    >
+                      {(addAddressMutation.isPending || updateAddressMutation.isPending) ? "Saving..." : editingAddress ? "Update Address" : "Save Address"}
+                    </Button>
+                  </div>
                 </div>
               )}
 
