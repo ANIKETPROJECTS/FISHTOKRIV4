@@ -1,8 +1,22 @@
 import { useState, useEffect, useMemo } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import Lottie from "lottie-react";
 import { Header } from "@/components/storefront/Header";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import profileAnim1 from "@/assets/lottie/profile1.json";
+import profileAnim2 from "@/assets/lottie/profile2.json";
+import logoutAnim from "@/assets/lottie/logout.json";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -487,6 +501,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState<Tab>("Profile & Addresses");
   const [ordersSubTab, setOrdersSubTab] = useState<OrdersSubTab>("current");
   const [otpModalOpen, setOtpModalOpen] = useState(false);
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
 
   const [editingProfile, setEditingProfile] = useState(false);
   const [draftProfile, setDraftProfile] = useState({ name: "", email: "", dateOfBirth: "" });
@@ -692,23 +707,30 @@ export default function Profile() {
     <div className="min-h-screen bg-slate-50 font-sans">
       <Header />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6">
-        {/* Back + Title */}
-        <div className="flex items-center justify-between gap-3 mb-6">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="rounded-full border border-border/50 bg-white">
-              <ChevronLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-2xl font-bold text-foreground">My Profile</h1>
-          </div>
+        {/* Back + Centered Title with Lottie animations */}
+        <div className="relative flex items-center justify-center gap-3 mb-6">
           <Button
             variant="ghost"
-            size="sm"
-            onClick={async () => { await logout(); navigate("/"); }}
-            className="text-muted-foreground hover:text-red-600 gap-1.5 rounded-full text-xs"
-            data-testid="button-logout"
+            size="icon"
+            onClick={() => navigate("/")}
+            className="absolute left-0 rounded-full border border-border/50 bg-white"
+            data-testid="button-profile-back"
           >
-            <LogOut className="w-3.5 h-3.5" /> Logout
+            <ChevronLeft className="w-5 h-5" />
           </Button>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Lottie
+              animationData={profileAnim1}
+              loop
+              className="w-12 h-12 sm:w-14 sm:h-14 shrink-0"
+            />
+            <h1 className="text-xl sm:text-2xl font-medium text-foreground tracking-tight">My Profile</h1>
+            <Lottie
+              animationData={profileAnim2}
+              loop
+              className="w-12 h-12 sm:w-14 sm:h-14 shrink-0"
+            />
+          </div>
         </div>
 
         {/* Tabs */}
@@ -992,6 +1014,20 @@ export default function Profile() {
                 </div>
               )}
             </div>
+
+            {/* Logout button — bottom of Profile & Addresses tab */}
+            <button
+              onClick={() => setLogoutConfirmOpen(true)}
+              className="w-full bg-white rounded-2xl border border-border/50 shadow-sm px-5 py-4 flex items-center justify-center gap-3 hover:border-primary/40 hover:bg-primary/5 transition-all group"
+              data-testid="button-logout"
+            >
+              <Lottie
+                animationData={logoutAnim}
+                loop
+                className="w-9 h-9 shrink-0"
+              />
+              <span className="text-base font-medium" style={{ color: "#F05B4E" }}>Logout</span>
+            </button>
           </div>
         )}
 
@@ -1163,6 +1199,39 @@ export default function Profile() {
           </div>
         )}
       </main>
+
+      {/* Logout confirmation dialog */}
+      <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+        <AlertDialogContent className="rounded-3xl max-w-sm">
+          <div className="flex justify-center -mt-2 mb-1">
+            <Lottie animationData={logoutAnim} loop className="w-24 h-24" />
+          </div>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-center text-lg font-medium" style={{ color: "#364F9F" }}>
+              Logout from FishTokri?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-sm">
+              You'll need to login again to view your orders, addresses and continue shopping.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row gap-2 sm:gap-2 sm:justify-center mt-2">
+            <AlertDialogCancel
+              className="flex-1 mt-0 rounded-xl border-border/60 font-medium"
+              data-testid="button-logout-cancel"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => { await logout(); navigate("/"); }}
+              className="flex-1 rounded-xl text-white font-medium hover:opacity-90"
+              style={{ backgroundColor: "#F05B4E" }}
+              data-testid="button-logout-confirm"
+            >
+              Yes, Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
