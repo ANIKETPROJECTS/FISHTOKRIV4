@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import profileAnim1 from "@/assets/lottie/profile1.json";
 import profileAnim2 from "@/assets/lottie/profile2.json";
-import logoutAnim from "@/assets/lottie/logout.json";
+import logoutAnim from "@/assets/lottie/logout-fish.json";
 import emptyAddressAnim from "@/assets/lottie/empty-address.json";
 import iconHomeImg from "@assets/home_1776927604826.png";
 import iconEditImg from "@assets/edit_1776927607777.png";
@@ -553,11 +553,12 @@ export default function Profile() {
   const { data: orders = [], isLoading: ordersLoading } = useQuery<OrderRequest[]>({
     queryKey: ["/api/customer/me/orders"],
     queryFn: async () => {
-      const res = await fetch("/api/customer/me/orders");
+      const res = await fetch("/api/customer/me/orders", { credentials: "include" });
       if (!res.ok) return [];
       return res.json();
     },
     enabled: !!customer && activeTab === "My Orders",
+    refetchOnMount: true,
   });
 
   const { data: products = [] } = useQuery<Product[]>({
