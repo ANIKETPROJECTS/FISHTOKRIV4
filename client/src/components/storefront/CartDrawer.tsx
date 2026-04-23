@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import popperAnim from "@/assets/lottie/popper.json";
 import emptyAddressAnim from "@/assets/lottie/empty-address.json";
+import orderSuccessAnim from "@/assets/lottie/order-success.json";
+import confettiAnim from "@/assets/lottie/confetti.json";
+import { FishTokriLogo } from "@/components/storefront/FishTokriLogo";
 import iconWalletImg from "@assets/wallet_1776953301704.png";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
 import iconBinImg from "@assets/bin_1776927610776.png";
@@ -54,7 +57,7 @@ const addressTypeColors: Record<string, string> = {
 const TYPE_OPTIONS = [
   { value: "house" as const, iconImg: iconHomeTypeImg, icon: null, label: "House" },
   { value: "office" as const, iconImg: iconBriefcaseImg, icon: null, label: "Office" },
-  { value: "other" as const, iconImg: null, icon: <Tag className="w-3.5 h-3.5" />, label: "Other" },
+  { value: "other" as const, iconImg: null, icon: null, label: "Other" },
 ];
 
 const emptyForm = {
@@ -495,15 +498,25 @@ export function CartDrawer() {
       <Sheet open={isCartOpen} onOpenChange={handleClose}>
         <SheetContent className="w-full sm:max-w-md flex flex-col h-full bg-white border-l border-border/30 p-0 overflow-hidden font-sans">
           {isSuccess ? (
-            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <div className="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
-                <CheckCircle2 className="w-12 h-12" />
+            <div className="relative flex flex-col items-center justify-start h-full p-6 text-center overflow-hidden">
+              <div className="pointer-events-none absolute inset-0 z-0">
+                <Lottie animationData={confettiAnim} loop autoplay style={{ width: "100%", height: "100%" }} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Order Placed!</h2>
-              <p className="text-muted-foreground text-base mb-8 max-w-[260px]">
+              <div className="relative z-10 mt-2 mb-4">
+                <FishTokriLogo className="h-16 w-auto" />
+              </div>
+              <div className="relative z-10 w-40 h-40 -mb-2">
+                <Lottie animationData={orderSuccessAnim} loop={false} autoplay style={{ width: "100%", height: "100%" }} />
+              </div>
+              <h2 className="relative z-10 text-2xl font-bold text-foreground mb-2">Order Placed!</h2>
+              <p className="relative z-10 text-muted-foreground text-base mb-8 max-w-[260px]">
                 Thank you! We'll contact you shortly to confirm your delivery.
               </p>
-              <Button onClick={() => handleClose(false)} size="lg" className="w-full max-w-[220px] rounded-xl font-semibold bg-primary text-white">
+              <Button
+                onClick={() => handleClose(false)}
+                size="lg"
+                className="relative z-10 w-full max-w-[220px] !rounded-full font-semibold bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20"
+              >
                 Back to Store
               </Button>
             </div>
@@ -1032,11 +1045,11 @@ export function CartDrawer() {
                                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border text-white transition-all hover:opacity-90"
                                     data-testid={`button-address-type-${opt.value}`}
                                   >
-                                    {opt.iconImg ? (
+                                    {opt.iconImg && (
                                       <img src={opt.iconImg} alt="" className="w-3.5 h-3.5 object-contain brightness-0 invert" />
-                                    ) : (
-                                      opt.icon
-                                    )} {opt.label}
+                                    )}
+                                    {opt.icon}
+                                    {opt.label}
                                   </button>
                                 );
                               })}
@@ -1263,7 +1276,7 @@ export function CartDrawer() {
                       <Button
                         onClick={placeOrder}
                         disabled={isPending || !customer || savedAddresses.length === 0}
-                        className="h-12 px-8 rounded-full font-bold bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20 flex items-center gap-2"
+                        className="h-12 px-8 !rounded-full font-bold bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-500/20 flex items-center gap-2"
                         data-testid="button-place-order"
                       >
                         {isPending ? "Placing..." : <>Proceed <ChevronRight className="w-4 h-4" /></>}
