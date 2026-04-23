@@ -126,6 +126,7 @@ export function CartDrawer() {
   const [couponExpanded, setCouponExpanded] = useState(false);
   const [timeslotExpanded, setTimeslotExpanded] = useState(false);
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [applyingCouponId, setApplyingCouponId] = useState<string | null>(null);
 
   const { data: allCoupons = [] } = useCoupons();
 
@@ -170,6 +171,7 @@ export function CartDrawer() {
       return;
     }
     setIsApplyingCoupon(true);
+    setApplyingCouponId(coupon.id);
     setCouponError("");
     try {
       const result = await validateCouponViaApi(coupon.code);
@@ -183,6 +185,7 @@ export function CartDrawer() {
       setCouponError("Failed to validate coupon. Please try again.");
     } finally {
       setIsApplyingCoupon(false);
+      setApplyingCouponId(null);
     }
   };
 
@@ -659,10 +662,8 @@ export function CartDrawer() {
                                 <span className="font-normal text-emerald-600">· saved ₹{discountAmount}</span>
                               </span>
                             ) : (
-                              <span className="text-sm font-semibold" style={{ color: "#F05B4E" }}>
-                                {cartCoupons.filter(isCouponApplicable).length > 0
-                                  ? `${cartCoupons.filter(isCouponApplicable).length} offer${cartCoupons.filter(isCouponApplicable).length > 1 ? "s" : ""} available`
-                                  : `${cartCoupons.length} coupon${cartCoupons.length > 1 ? "s" : ""}`}
+                              <span className="text-sm font-semibold text-foreground">
+                                Offers Available
                               </span>
                             )}
                           </div>
@@ -676,19 +677,23 @@ export function CartDrawer() {
                           <>
                             {/* Applied coupon banner */}
                             {appliedCoupon && (
-                              <div className="flex items-center justify-between px-4 py-2.5 bg-emerald-50 border-t border-emerald-100">
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                                  <div>
-                                    <span className="font-mono font-bold text-sm text-emerald-700 tracking-wider">{appliedCoupon.code}</span>
-                                    <p className="text-xs text-emerald-600">
+                              <div className="flex items-center justify-between px-4 py-3 bg-emerald-600 border-t border-emerald-700">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <button
+                                    onClick={removeCoupon}
+                                    className="w-6 h-6 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center shrink-0 transition-colors"
+                                    aria-label="Remove coupon"
+                                    data-testid="button-remove-coupon"
+                                  >
+                                    <img src={iconBinImg} alt="" className="w-3 h-3 object-contain" style={{ filter: "brightness(0) invert(1)" }} />
+                                  </button>
+                                  <div className="min-w-0">
+                                    <span className="font-mono font-bold text-sm text-white tracking-wider">{appliedCoupon.code}</span>
+                                    <p className="text-xs text-white/90">
                                       {appliedCoupon.type === "flat" ? `₹${discountAmount} off applied!` : `${appliedCoupon.discountValue}% off — you save ₹${discountAmount}!`}
                                     </p>
                                   </div>
                                 </div>
-                                <button onClick={removeCoupon} className="text-xs text-red-500 font-semibold hover:text-red-700 flex items-center gap-1">
-                                  <X className="w-3 h-3" /> Remove
-                                </button>
                               </div>
                             )}
 
@@ -778,23 +783,28 @@ export function CartDrawer() {
                                         )}
                                       </div>
                                     </div>
-                                    <button
-                                      onClick={() => { if (applicable && !isApplied && !isApplyingCoupon) { applyCartCoupon(coupon).then(() => setCouponExpanded(false)); } }}
-                                      disabled={!applicable || isApplied || isApplyingCoupon || exhausted}
-                                      className={`ml-3 shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
-                                        isApplied
-                                          ? "bg-emerald-100 text-emerald-700 cursor-default"
-                                          : exhausted
-                                            ? "bg-red-50 text-red-400 cursor-not-allowed"
-                                            : applicable
-                                              ? "text-white"
-                                              : "bg-muted text-muted-foreground cursor-not-allowed"
-                                      }`}
-                                      style={applicable && !isApplied && !exhausted ? { backgroundColor: "#364F9F" } : undefined}
-                                    >
-                                      {isApplyingCoupon && applicable && !isApplied ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-                                      {isApplied ? "✓ Applied" : exhausted ? "Limit reached" : applicable ? "Apply" : "Locked"}
-                                    </button>
+                                    {(() => {
+                                      const isThisApplying = applyingCouponId === coupon.id;
+                                      return (
+                                        <button
+                                          onClick={() => { if (applicable && !isApplied && !isApplyingCoupon) { applyCartCoupon(coupon).then(() => setCouponExpanded(false)); } }}
+                                          disabled={!applicable || isApplied || isApplyingCoupon || exhausted}
+                                          className={`ml-3 shrink-0 text-xs font-bold px-3.5 py-1.5 rounded-full transition-colors flex items-center gap-1 ${
+                                            isApplied
+                                              ? "bg-emerald-100 text-emerald-700 cursor-default"
+                                              : exhausted
+                                                ? "bg-red-50 text-red-400 cursor-not-allowed"
+                                                : applicable
+                                                  ? "text-white"
+                                                  : "bg-muted text-muted-foreground cursor-not-allowed"
+                                          }`}
+                                          style={applicable && !isApplied && !exhausted ? { backgroundColor: "#364F9F" } : undefined}
+                                        >
+                                          {isThisApplying ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                          {isApplied ? "✓ Applied" : exhausted ? "Limit reached" : applicable ? "Apply" : "Locked"}
+                                        </button>
+                                      );
+                                    })()}
                                   </div>
                                 );
                               })}
