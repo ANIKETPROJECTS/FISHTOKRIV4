@@ -1,11 +1,15 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useLocation } from "wouter";
+import Lottie from "lottie-react";
 import {
   CheckCircle2, Minus, Plus, ShoppingBag, Trash2,
   MapPin, Banknote, CreditCard, ChevronRight, ClipboardList,
   X, Home, Briefcase, Tag, Navigation, Loader2, AlertCircle, Search,
   Clock, Zap, Ticket, ChevronDown, ChevronUp
 } from "lucide-react";
+import popperAnim from "@/assets/lottie/popper.json";
+import headerCartImg from "@assets/shopping-bag_1774706595493.png";
+import iconBinImg from "@assets/bin_1776927610776.png";
 import { useCart } from "@/context/CartContext";
 import { useCreateOrder } from "@/hooks/use-orders";
 import { useCustomer } from "@/context/CustomerContext";
@@ -495,7 +499,7 @@ export function CartDrawer() {
             <>
               <SheetHeader className="px-5 py-4 border-b border-border/30 bg-white sticky top-0 z-10">
                 <SheetTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
-                  <ShoppingBag className="w-5 h-5 text-primary" />
+                  <img src={headerCartImg} alt="Cart" className="w-5 h-5 object-contain" />
                   Order Summary
                 </SheetTitle>
               </SheetHeader>
@@ -513,16 +517,25 @@ export function CartDrawer() {
                 <div className="flex-1 flex flex-col overflow-hidden">
                   <div className="flex-1 overflow-y-auto scrollbar-hide">
                     {savedTotal > 0 && (
-                      <div className="mx-4 mt-4 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 text-center">
-                        <p className="text-emerald-700 text-sm font-semibold">🎉 Congratulations! You've saved ₹{savedTotal}</p>
+                      <div className="mx-4 mt-4 flex items-center justify-center gap-2 px-2 py-1.5">
+                        <Lottie
+                          animationData={popperAnim}
+                          loop
+                          autoplay
+                          style={{ width: 36, height: 36 }}
+                        />
+                        <p className="text-sm font-semibold">
+                          <span style={{ color: "#F05B4E" }}>Congratulations!</span>
+                          <span style={{ color: "#364F9F" }}> You've saved ₹{savedTotal}</span>
+                        </p>
                       </div>
                     )}
 
                     <div className="px-4 pt-4 space-y-3">
                       {items.map(item => (
-                        <div key={item.id} className="bg-white rounded-2xl border border-border/40 shadow-sm overflow-hidden" data-testid={`cart-item-${item.id}`}>
+                        <div key={item.id} className="overflow-hidden" data-testid={`cart-item-${item.id}`}>
                           <div className="flex items-center gap-3 p-3">
-                            <div className="w-14 h-14 rounded-xl bg-slate-50 overflow-hidden flex-shrink-0 border border-slate-100 p-1 flex items-center justify-center">
+                            <div className="w-14 h-14 overflow-hidden flex-shrink-0 flex items-center justify-center">
                               <img src={item.imageUrl || getFallbackImage(item.category)} alt={item.name} className="w-full h-full object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -540,7 +553,9 @@ export function CartDrawer() {
                             </div>
                             <div className="flex items-center gap-1 bg-slate-50 rounded-full px-2 py-1 border border-slate-100">
                               <button className="h-6 w-6 rounded-full hover:bg-white flex items-center justify-center" onClick={() => updateQuantity(item.id, item.quantity - 1)} data-testid={`button-decrease-${item.id}`}>
-                                {item.quantity === 1 ? <Trash2 className="w-3 h-3 text-red-500" /> : <Minus className="w-3 h-3 text-slate-600" />}
+                                {item.quantity === 1
+                                  ? <img src={iconBinImg} alt="Remove" className="w-3 h-3 object-contain" style={{ filter: "brightness(0)" }} />
+                                  : <Minus className="w-3 h-3 text-slate-600" />}
                               </button>
                               <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
                               <button className="h-6 w-6 rounded-full hover:bg-white flex items-center justify-center" onClick={() => updateQuantity(item.id, item.quantity + 1)} data-testid={`button-increase-${item.id}`}>
