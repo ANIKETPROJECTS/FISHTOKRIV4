@@ -28,6 +28,7 @@ import trackPlacedImg from "@/assets/track-placed.png";
 import trackConfirmedImg from "@/assets/track-confirmed.png";
 import trackDeliveryImg from "@/assets/track-delivery.png";
 import trackDeliveredImg from "@/assets/track-delivered.png";
+import invoiceImg from "@/assets/invoice.png";
 import iconBriefcaseImg from "@assets/briefcase_1776927648499.png";
 import headerUserImg from "@assets/user_(1)_1774707188827.png";
 import headerCartImg from "@assets/shopping-bag_1774706595493.png";
@@ -122,6 +123,7 @@ const TRACK_STEPS = [
   { status: "delivered",        label: "Delivered",          desc: "Order delivered successfully",     img: trackDeliveredImg },
 ];
 const BRAND_RED_FILTER = "brightness(0) saturate(100%) invert(45%) sepia(89%) saturate(1620%) hue-rotate(331deg) brightness(99%) contrast(89%)";
+const BRAND_BLUE_FILTER = "brightness(0) saturate(100%) invert(28%) sepia(48%) saturate(1517%) hue-rotate(212deg) brightness(91%) contrast(89%)";
 const TRACK_STATUS_ORDER = ["pending", "confirmed", "out_for_delivery", "delivered"];
 
 function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () => void }) {
@@ -178,8 +180,8 @@ function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () 
                         <img
                           src={step.img}
                           alt=""
-                          className={`w-7 h-7 object-contain transition-all ${isCurrent ? "animate-pulse" : ""} ${isDone || isCurrent ? "" : "opacity-30"}`}
-                          style={{ filter: isDone || isCurrent ? BRAND_RED_FILTER : "grayscale(100%)" }}
+                          className={`w-7 h-7 object-contain transition-all ${isCurrent ? "animate-pulse" : ""}`}
+                          style={{ filter: isCurrent ? BRAND_RED_FILTER : BRAND_BLUE_FILTER }}
                         />
                         {isCurrent && (
                           <>
@@ -304,8 +306,8 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
                     <img
                       src={step.img}
                       alt=""
-                      className={`w-7 h-7 object-contain transition-all ${isCurrent ? "animate-pulse" : ""} ${isDone || isCurrent ? "" : "opacity-30"}`}
-                      style={{ filter: isDone || isCurrent ? BRAND_RED_FILTER : "grayscale(100%)" }}
+                      className={`w-7 h-7 object-contain transition-all ${isCurrent ? "animate-pulse" : ""}`}
+                      style={{ filter: isCurrent ? BRAND_RED_FILTER : BRAND_BLUE_FILTER }}
                     />
                     {isCurrent && (
                       <>
@@ -315,7 +317,7 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
                     )}
                   </div>
                   <p className={`mt-1.5 text-[10px] font-medium text-center leading-tight ${
-                    isDone ? "text-primary" : isCurrent ? "text-foreground" : "text-slate-400"
+                    isCurrent ? "text-foreground font-semibold" : "text-primary"
                   }`}>{step.label}</p>
                 </div>
               );
@@ -342,7 +344,7 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
           className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
           data-testid={`button-invoice-${order.id}`}
         >
-          <Receipt className="w-3.5 h-3.5" />
+          <img src={invoiceImg} alt="" className="w-3.5 h-3.5 object-contain" style={{ filter: BRAND_RED_FILTER }} />
           {expanded ? "Hide Invoice" : "View Invoice"}
           {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
@@ -1185,7 +1187,7 @@ export default function Profile() {
                   >
                     {sub === "current" ? "Active" : "Previous"}
                     {sub === "current" && currentOrders.length > 0 && (
-                      <span className="bg-white/25 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">{currentOrders.length}</span>
+                      <span className="bg-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center" style={{ color: "#364F9F" }}>{currentOrders.length}</span>
                     )}
                   </button>
                 );
