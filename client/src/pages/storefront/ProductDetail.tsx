@@ -239,7 +239,7 @@ export default function ProductDetail() {
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{product.description || dummy.description}</p>
 
             {/* Pieces / Serves / Weight — single row; weight stacks gross/net on mobile, inline on desktop */}
-            <div className="flex items-center justify-between sm:justify-start gap-x-3 sm:gap-x-6 py-1 text-black dark:text-white whitespace-nowrap divide-x divide-black/70 dark:divide-white/70 [&>div]:pl-3 sm:[&>div]:pl-6 [&>div:first-child]:pl-0">
+            <div className="flex items-center justify-between sm:justify-start gap-x-3 sm:gap-x-5 py-1 text-black dark:text-white whitespace-nowrap">
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <span
                   aria-hidden
@@ -260,6 +260,8 @@ export default function ProductDetail() {
                 </span>
               </div>
 
+              <span aria-hidden className="block w-px h-6 sm:h-7 bg-black/70 dark:bg-white/70 shrink-0" />
+
               <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <span
                   aria-hidden
@@ -279,6 +281,10 @@ export default function ProductDetail() {
                   {product.serves || dummy.serves}
                 </span>
               </div>
+
+              {(product.grossWeight || product.netWeight) && (
+                <span aria-hidden className="block w-px h-6 sm:h-7 bg-black/70 dark:bg-white/70 shrink-0" />
+              )}
 
               {(product.grossWeight || product.netWeight) && (
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
