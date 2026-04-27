@@ -22,6 +22,9 @@ import piecesIcon from "@assets/cutlery_1774801395283.png";
 import servesIcon from "@assets/hot-food_1774801420499.png";
 import giftCardIconImg from "@/assets/gift-card.png";
 import tagIconImg from "@/assets/tag.png";
+import Lottie from "lottie-react";
+import recipesIconAnim from "@/assets/lottie/recipes-icon.json";
+import mayAlsoLikeAnim from "@/assets/lottie/may-also-like.json";
 
 import fishImg from "@assets/Gemini_Generated_Image_w6wqkkw6wqkkw6wq_(1)_1772713077919.png";
 import prawnsImg from "@assets/Gemini_Generated_Image_5xy0sd5xy0sd5xy0_1772713090650.png";
@@ -362,11 +365,9 @@ export default function ProductDetail() {
             {/* Available Offers — collapsible (matches Order Summary styling) */}
             {liveCoupons.length > 0 && (
               <div className="border border-border/40 rounded-2xl overflow-hidden">
-                <button
-                  type="button"
-                  onClick={() => setOffersExpanded(s => !s)}
-                  className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20 hover:bg-muted/30 transition-colors"
-                  data-testid="button-toggle-offers"
+                <div
+                  className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20"
+                  data-testid="header-offers"
                 >
                   <span
                     aria-hidden
@@ -388,18 +389,13 @@ export default function ProductDetail() {
                       Offers Available
                     </span>
                   </div>
-                  {offersExpanded
-                    ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
-                    : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-                </button>
+                </div>
 
-                {offersExpanded && (
-                  <div className="flex flex-col divide-y divide-border/20 border-t border-border/20">
-                    {liveCoupons.map((c) => (
-                      <CouponCard key={c.id} code={c.code} description={c.description} color={c.color} />
-                    ))}
-                  </div>
-                )}
+                <div className="flex flex-col divide-y divide-border/20 border-t border-border/20">
+                  {liveCoupons.map((c) => (
+                    <CouponCard key={c.id} code={c.code} description={c.description} color={c.color} />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -408,8 +404,10 @@ export default function ProductDetail() {
         {/* ── Explore New Recipes ── */}
         <section className="mb-14">
           <div className="flex items-center gap-2 mb-5">
-            <ChefHat className="w-5 h-5 text-accent" />
-            <h2 className="text-xl font-bold text-foreground">Explore New Recipes</h2>
+            <div className="w-9 h-9 shrink-0">
+              <Lottie animationData={recipesIconAnim} loop autoplay />
+            </div>
+            <h2 className="text-lg sm:text-xl font-medium text-foreground">Explore New Recipes</h2>
           </div>
           {product.recipes && product.recipes.length > 0 ? (
             <div className="relative">
@@ -477,8 +475,10 @@ export default function ProductDetail() {
         {recommended.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-5">
-              <ShoppingBasket className="w-5 h-5 text-accent" />
-              <h2 className="text-xl font-bold text-foreground">
+              <div className="w-9 h-9 shrink-0">
+                <Lottie animationData={mayAlsoLikeAnim} loop autoplay />
+              </div>
+              <h2 className="text-lg sm:text-xl font-medium text-foreground">
                 {sameCategory.length > 0 ? `More ${product.category}` : "You May Also Like"}
               </h2>
             </div>
