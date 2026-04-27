@@ -126,6 +126,7 @@ export function CartDrawer() {
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "online">("cod");
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
   const [selectedTimeslotId, setSelectedTimeslotId] = useState<string | null>(null);
+  const [selectedNextDaySubSlotId, setSelectedNextDaySubSlotId] = useState<string | null>(null);
   const [expandedInstructions, setExpandedInstructions] = useState<Record<number, boolean>>({});
 
   // Coupon state
@@ -284,6 +285,7 @@ export function CartDrawer() {
   useEffect(() => {
     if (selectedTimeslotId && !availableTimeslots.find(t => t.id === selectedTimeslotId)) {
       setSelectedTimeslotId(null);
+      setSelectedNextDaySubSlotId(null);
     }
   }, [availableTimeslots, selectedTimeslotId]);
 
@@ -488,10 +490,15 @@ export function CartDrawer() {
     const fullAddress = [selected.building, selected.street, selected.area, selected.pincode].filter(Boolean).join(", ");
     const orderItems = items.map(i => ({ productId: i.id, quantity: i.quantity, name: i.name, price: i.price, imageUrl: i.imageUrl ?? null }));
     const isNextDay = (selectedTimeslot as any).isNextDay === true;
+    const nextDaySubSlot = isNextDay ? timeslots.find(t => t.id === selectedNextDaySubSlotId) : null;
+    if (isNextDay && !nextDaySubSlot) {
+      toast({ title: "Please pick a delivery window for next day", variant: "destructive" });
+      return;
+    }
     const slotLabel = selectedTimeslot.isInstant
       ? "Instant Delivery (Porter)"
-      : isNextDay
-        ? selectedTimeslot.label
+      : isNextDay && nextDaySubSlot
+        ? `${selectedTimeslot.label} · ${nextDaySubSlot.label} (${nextDaySubSlot.startTime} – ${nextDaySubSlot.endTime})`
         : `${selectedTimeslot.label} (${selectedTimeslot.startTime} – ${selectedTimeslot.endTime})`;
     createOrder(
       {
@@ -1212,48 +1219,86 @@ export function CartDrawer() {
                           ) : (
                             availableTimeslots.map(slot => {
                               const isNextDay = (slot as any).isNextDay === true;
+                              const isSelected = selectedTimeslotId === slot.id;
                               return (
-                              <button
-                                key={slot.id}
-                                type="button"
-                                onClick={() => { setSelectedTimeslotId(slot.id); setTimeslotExpanded(false); }}
-                                className={`w-full text-left px-3 py-2.5 rounded-xl border-2 transition-all ${selectedTimeslotId === slot.id ? (slot.isInstant ? "border-amber-500 bg-amber-50" : "border-[#364F9F] bg-[#364F9F]/5") : "border-border/40 bg-white hover:border-[#364F9F]/30"}`}
-                                data-testid={`timeslot-${slot.id}`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedTimeslotId === slot.id ? (slot.isInstant ? "border-amber-500" : "border-[#364F9F]") : "border-slate-300"}`}>
-                                    {selectedTimeslotId === slot.id && <div className={`w-2 h-2 rounded-full ${slot.isInstant ? "bg-amber-500" : "bg-[#364F9F]"}`} />}
-                                  </div>
-                                  {isNextDay && (
-                                    <span
-                                      aria-hidden
-                                      className="w-4 h-4 inline-block flex-shrink-0"
-                                      style={{
-                                        backgroundColor: "#364F9F",
-                                        WebkitMaskImage: `url(${iconScheduleImg})`,
-                                        maskImage: `url(${iconScheduleImg})`,
-                                        WebkitMaskRepeat: "no-repeat",
-                                        maskRepeat: "no-repeat",
-                                        WebkitMaskSize: "contain",
-                                        maskSize: "contain",
-                                        WebkitMaskPosition: "center",
-                                        maskPosition: "center",
-                                      }}
-                                    />
-                                  )}
-                                  <span className={`text-sm font-semibold flex-1 min-w-0 truncate ${slot.isInstant ? "text-amber-700" : isNextDay ? "text-[#364F9F]" : "text-foreground"}`}>
-                                    {slot.label}
-                                    {!isNextDay && slot.startTime && slot.endTime && (
-                                      <span className="font-normal text-muted-foreground"> · {slot.startTime}–{slot.endTime}</span>
+                              <div key={slot.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedTimeslotId(slot.id);
+                                    if (!isNextDay) {
+                                      setSelectedNextDaySubSlotId(null);
+                                      setTimeslotExpanded(false);
+                                    }
+                                  }}
+                                  className={`w-full text-left px-3 py-2.5 rounded-xl border-2 transition-all ${isSelected ? (slot.isInstant ? "border-amber-500 bg-amber-50" : "border-[#364F9F] bg-[#364F9F]/5") : "border-border/40 bg-white hover:border-[#364F9F]/30"}`}
+                                  data-testid={`timeslot-${slot.id}`}
+                                >
+                                  <div className="flex items-center gap-2.5">
+                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? (slot.isInstant ? "border-amber-500" : "border-[#364F9F]") : "border-slate-300"}`}>
+                                      {isSelected && <div className={`w-2 h-2 rounded-full ${slot.isInstant ? "bg-amber-500" : "bg-[#364F9F]"}`} />}
+                                    </div>
+                                    {isNextDay && (
+                                      <span
+                                        aria-hidden
+                                        className="w-4 h-4 inline-block flex-shrink-0"
+                                        style={{
+                                          backgroundColor: "#364F9F",
+                                          WebkitMaskImage: `url(${iconScheduleImg})`,
+                                          maskImage: `url(${iconScheduleImg})`,
+                                          WebkitMaskRepeat: "no-repeat",
+                                          maskRepeat: "no-repeat",
+                                          WebkitMaskSize: "contain",
+                                          maskSize: "contain",
+                                          WebkitMaskPosition: "center",
+                                          maskPosition: "center",
+                                        }}
+                                      />
                                     )}
-                                  </span>
-                                  {slot.isInstant && (slot.extraCharge ?? 0) > 0 ? (
-                                    <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">+₹{slot.extraCharge}</span>
-                                  ) : !slot.isInstant ? (
-                                    <span className="text-xs font-semibold text-emerald-600 shrink-0">FREE</span>
-                                  ) : null}
-                                </div>
-                              </button>
+                                    <span className={`text-sm font-semibold flex-1 min-w-0 truncate ${slot.isInstant ? "text-amber-700" : isNextDay ? "text-[#364F9F]" : "text-foreground"}`}>
+                                      {slot.label}
+                                      {!isNextDay && slot.startTime && slot.endTime && (
+                                        <span className="font-normal text-muted-foreground"> · {slot.startTime}–{slot.endTime}</span>
+                                      )}
+                                    </span>
+                                    {slot.isInstant && (slot.extraCharge ?? 0) > 0 ? (
+                                      <span className="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">+₹{slot.extraCharge}</span>
+                                    ) : !slot.isInstant ? (
+                                      <span className="text-xs font-semibold text-emerald-600 shrink-0">FREE</span>
+                                    ) : null}
+                                  </div>
+                                </button>
+
+                                {isNextDay && isSelected && (
+                                  <div className="mt-2 ml-2 pl-3 border-l-2 border-[#364F9F]/30 space-y-1.5" data-testid="next-day-subslots">
+                                    <p className="text-[11px] font-semibold text-[#364F9F] uppercase tracking-wide mb-1.5">Pick a delivery window</p>
+                                    {timeslots.filter(t => !t.isInstant).map(sub => {
+                                      const isSubSelected = selectedNextDaySubSlotId === sub.id;
+                                      return (
+                                        <button
+                                          key={sub.id}
+                                          type="button"
+                                          onClick={() => setSelectedNextDaySubSlotId(sub.id)}
+                                          className={`w-full text-left px-3 py-2 rounded-lg border transition-all ${isSubSelected ? "border-[#F05B4E] bg-[#F05B4E]/5" : "border-border/40 bg-white hover:border-[#F05B4E]/40"}`}
+                                          data-testid={`next-day-sub-${sub.id}`}
+                                        >
+                                          <div className="flex items-center gap-2.5">
+                                            <div className={`w-3.5 h-3.5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${isSubSelected ? "border-[#F05B4E]" : "border-slate-300"}`}>
+                                              {isSubSelected && <div className="w-1.5 h-1.5 rounded-full bg-[#F05B4E]" />}
+                                            </div>
+                                            <span className={`text-xs font-medium flex-1 min-w-0 truncate ${isSubSelected ? "text-[#F05B4E]" : "text-foreground"}`}>
+                                              {sub.label}
+                                              {sub.startTime && sub.endTime && (
+                                                <span className="font-normal text-muted-foreground"> · {sub.startTime}–{sub.endTime}</span>
+                                              )}
+                                            </span>
+                                          </div>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </div>
                             );})
                           )}
                         </div>

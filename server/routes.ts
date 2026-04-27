@@ -1018,10 +1018,15 @@ export async function registerRoutes(
 
   // ── Timeslot routes ─────────────────────────────────────────────────────
   const DEFAULT_TIMESLOTS = [
-    { label: "Morning Delivery", startTime: "7:00 AM", endTime: "8:30 AM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 1 },
-    { label: "Midday Delivery", startTime: "11:00 AM", endTime: "12:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 2 },
-    { label: "Afternoon Delivery", startTime: "2:00 PM", endTime: "3:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 3 },
-    { label: "Evening Delivery", startTime: "6:00 PM", endTime: "7:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 4 },
+    { label: "Early Morning Delivery", startTime: "5:30 AM", endTime: "7:00 AM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 1 },
+    { label: "Morning Delivery", startTime: "7:00 AM", endTime: "8:30 AM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 2 },
+    { label: "Late Morning Delivery", startTime: "9:00 AM", endTime: "10:30 AM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 3 },
+    { label: "Midday Delivery", startTime: "11:00 AM", endTime: "12:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 4 },
+    { label: "Afternoon Delivery", startTime: "2:00 PM", endTime: "3:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 5 },
+    { label: "Late Afternoon Delivery", startTime: "4:00 PM", endTime: "5:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 6 },
+    { label: "Evening Delivery", startTime: "6:00 PM", endTime: "7:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 7 },
+    { label: "Night Delivery", startTime: "8:00 PM", endTime: "9:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 8 },
+    { label: "Late Night Delivery", startTime: "10:00 PM", endTime: "11:30 PM", isInstant: false, extraCharge: 0, isActive: true, sortOrder: 9 },
   ];
 
   const INSTANT_TIMESLOT = {
@@ -1050,12 +1055,15 @@ export async function registerRoutes(
     try {
       const hub = await getReqHubModels(req);
       if (!hub) return res.json([INSTANT_TIMESLOT, ...DEFAULT_TIMESLOTS.map((s, i) => ({ ...s, id: `default-${i}` }))]);
-      let docs = await hub.Timeslot.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
-      // Auto-seed defaults if no timeslots exist yet
-      if (docs.length === 0) {
-        await hub.Timeslot.insertMany(DEFAULT_TIMESLOTS);
-        docs = await hub.Timeslot.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
+      // Upsert each default by label so new defaults appear without
+      // destroying existing custom slots or admin tweaks.
+      for (const slot of DEFAULT_TIMESLOTS) {
+        const existing = await hub.Timeslot.findOne({ label: slot.label }).lean();
+        if (!existing) {
+          await hub.Timeslot.create(slot);
+        }
       }
+      const docs = await hub.Timeslot.find({ isActive: true }).sort({ sortOrder: 1 }).lean();
       // Always prepend instant delivery
       res.json([INSTANT_TIMESLOT, ...docs.map(toTimeslot)]);
     } catch {
