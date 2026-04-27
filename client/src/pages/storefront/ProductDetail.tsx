@@ -216,9 +216,20 @@ export default function ProductDetail() {
             {/* Name + category / subcategory */}
             <div>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge variant="secondary" className="text-xs font-medium">{product.category}</Badge>
+                <span
+                  className="text-xs font-bold tracking-wide rounded-full px-2.5 py-0.5 text-white inline-block"
+                  style={{ backgroundColor: "#F05B4E" }}
+                  data-testid={`badge-category-${product.category}`}
+                >
+                  {product.category}
+                </span>
                 {product.subCategory && product.subCategory !== product.name && (
-                  <Badge variant="outline" className="text-xs font-medium text-muted-foreground">{product.subCategory}</Badge>
+                  <span
+                    className="text-xs font-semibold tracking-wide rounded-full px-2.5 py-0.5 inline-block border"
+                    style={{ borderColor: "#364F9F", color: "#364F9F", backgroundColor: "transparent" }}
+                  >
+                    {product.subCategory}
+                  </span>
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">{product.name}</h1>
@@ -227,41 +238,87 @@ export default function ProductDetail() {
             {/* Description */}
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{product.description || dummy.description}</p>
 
-            {/* Pieces / Serves / Weight — all in one row */}
-            <div className="flex items-stretch gap-0 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/20">
-              <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
-                <div className="flex flex-col items-center shrink-0">
-                  <img src={piecesIcon} alt="Pieces" className="w-6 h-6 object-contain object-bottom dark:invert" />
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Pieces</span>
-                </div>
-                <span className="text-sm font-bold text-foreground leading-tight truncate">{product.pieces || dummy.pieces}</span>
+            {/* Pieces / Serves / Weight — all in one row, vertically stacked per cell */}
+            <div className="grid grid-cols-3 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/20">
+              <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+                <span
+                  aria-hidden
+                  className="w-5 h-5 inline-block"
+                  style={{
+                    backgroundColor: "#364F9F",
+                    WebkitMaskImage: `url(${piecesIcon})`,
+                    maskImage: `url(${piecesIcon})`,
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                  }}
+                />
+                <span className="text-[10px] text-muted-foreground mt-1 font-medium">Pieces</span>
+                <span
+                  className="text-xs sm:text-sm font-semibold mt-1 leading-tight break-words"
+                  style={{ color: "#F05B4E" }}
+                >
+                  {product.pieces || dummy.pieces}
+                </span>
               </div>
 
-              <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
-                <div className="flex flex-col items-center shrink-0">
-                  <img src={servesIcon} alt="Serves" className="w-6 h-6 object-contain object-bottom dark:invert" />
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Serves</span>
-                </div>
-                <span className="text-sm font-bold text-foreground leading-tight truncate">{product.serves || dummy.serves}</span>
+              <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+                <span
+                  aria-hidden
+                  className="w-5 h-5 inline-block"
+                  style={{
+                    backgroundColor: "#364F9F",
+                    WebkitMaskImage: `url(${servesIcon})`,
+                    maskImage: `url(${servesIcon})`,
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                  }}
+                />
+                <span className="text-[10px] text-muted-foreground mt-1 font-medium">Serves</span>
+                <span
+                  className="text-xs sm:text-sm font-semibold mt-1 leading-tight break-words"
+                  style={{ color: "#F05B4E" }}
+                >
+                  {product.serves || dummy.serves}
+                </span>
               </div>
 
               {(product.grossWeight || product.netWeight) && (
-                <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
-                  <div className="flex flex-col items-center shrink-0">
-                    <img src={weighScaleIcon} alt="Weight" className="w-6 h-6 object-contain object-bottom dark:invert" />
-                    <span className="text-[10px] text-muted-foreground mt-1 font-medium">Weight</span>
-                  </div>
-                  <div className="min-w-0 leading-tight">
+                <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-5 h-5 inline-block"
+                    style={{
+                      backgroundColor: "#364F9F",
+                      WebkitMaskImage: `url(${weighScaleIcon})`,
+                      maskImage: `url(${weighScaleIcon})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Weight</span>
+                  <div className="mt-1 leading-tight">
                     {product.grossWeight && (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-bold text-foreground">{product.grossWeight}</span>
-                        <span className="text-[10px] text-muted-foreground">gross</span>
+                      <div className="text-[11px] sm:text-xs">
+                        <span className="font-semibold" style={{ color: "#F05B4E" }}>{product.grossWeight}</span>
+                        <span className="text-muted-foreground ml-0.5">gross</span>
                       </div>
                     )}
                     {product.netWeight && (
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-sm font-bold text-foreground">{product.netWeight}</span>
-                        <span className="text-[10px] text-muted-foreground">net</span>
+                      <div className="text-[11px] sm:text-xs">
+                        <span className="font-semibold" style={{ color: "#F05B4E" }}>{product.netWeight}</span>
+                        <span className="text-muted-foreground ml-0.5">net</span>
                       </div>
                     )}
                   </div>

@@ -199,9 +199,9 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white"
+              className="absolute inset-0 z-50 flex flex-col items-center justify-start bg-white pt-16 px-6"
             >
-              <div className="mb-4">
+              <div className="mt-4 mb-6">
                 <FishTokriLogo className="h-16 w-auto" />
               </div>
               <div className="w-72 h-72">
