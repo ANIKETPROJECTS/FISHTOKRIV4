@@ -95,17 +95,17 @@ export function CategoryMenuDropdown({ open, onClose }: Props) {
           <button
             onClick={() => handleCategoryClick("All")}
             onMouseEnter={() => setActiveCategory("All")}
-            className={`w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-colors border-b border-slate-100/60 ${
+            className={`w-full flex items-center gap-3 sm:gap-3.5 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-colors border-b border-slate-100/60 ${
               activeCategoryName === "All"
                 ? "bg-white border-l-[3px] border-l-accent"
                 : "hover:bg-white border-l-[3px] border-l-transparent"
             }`}
             data-testid="menu-category-all"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0 bg-accent/10 border border-slate-100 shadow-sm flex items-center justify-center text-base">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0 flex items-center justify-center text-2xl sm:text-3xl">
               🛒
             </div>
-            <span className={`text-xs sm:text-sm font-medium ${activeCategoryName === "All" ? "text-foreground font-semibold" : "text-slate-600"}`}>
+            <span className={`text-sm sm:text-base font-medium ${activeCategoryName === "All" ? "text-foreground font-semibold" : "text-slate-700"}`}>
               All
             </span>
           </button>
@@ -118,17 +118,17 @@ export function CategoryMenuDropdown({ open, onClose }: Props) {
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.name)}
                 onMouseEnter={() => setActiveCategory(cat.name)}
-                className={`w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-colors border-b border-slate-100/60 ${
+                className={`w-full flex items-center gap-3 sm:gap-3.5 px-3 sm:px-4 py-3 sm:py-3.5 text-left transition-colors border-b border-slate-100/60 ${
                   isActive
                     ? "bg-white border-l-[3px] border-l-accent"
                     : "hover:bg-white border-l-[3px] border-l-transparent"
                 }`}
                 data-testid={`menu-category-${cat.name.toLowerCase().replace(/\s+/g, "-")}`}
               >
-                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0 bg-white border border-slate-100 shadow-sm">
-                  <img src={img} alt={cat.name} className="w-full h-full object-cover" />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                  <img src={img} alt={cat.name} className="w-full h-full object-contain" />
                 </div>
-                <span className={`text-xs sm:text-sm font-medium ${isActive ? "text-foreground font-semibold" : "text-slate-600"}`}>
+                <span className={`text-sm sm:text-base font-medium ${isActive ? "text-foreground font-semibold" : "text-slate-700"}`}>
                   {cat.name}
                 </span>
               </button>

@@ -187,15 +187,12 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
           <Button
             variant="ghost"
             size="icon"
-            className={`text-foreground hover:bg-accent/10 rounded-full w-9 h-9 relative ${customer ? "ring-2 ring-primary/30" : ""}`}
+            className="text-foreground hover:bg-accent/10 rounded-full w-9 h-9 relative"
             onClick={handleProfileClick}
             aria-label={customer ? "My Profile" : "Login"}
             data-testid="button-profile"
           >
             <img src={userImg} alt="Profile" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-            {customer && (
-              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
-            )}
           </Button>
 
           <Button
@@ -207,7 +204,7 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
           >
             <img src={cartImg} alt="Cart" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             {totalItems > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-accent text-white text-[10px] font-bold flex items-center justify-center rounded-full shadow-md animate-in zoom-in">
+              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 sm:w-5 sm:h-5 bg-[#F05B4E] text-white text-[10px] font-bold flex items-center justify-center rounded-full shadow-md animate-in zoom-in">
                 {totalItems}
               </span>
             )}
