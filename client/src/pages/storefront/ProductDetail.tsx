@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getDummyDetail } from "@/lib/productDummyData";
 import {
-  ChevronLeft, Plus, Minus, Copy, Check, Tag, ChefHat, ShoppingBasket,
+  ChevronLeft, Plus, Minus, Copy, Check, ChefHat, ShoppingBasket,
+  ChevronDown, ChevronUp,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { SwipeHint } from "@/components/storefront/SwipeHint";
@@ -19,6 +20,8 @@ import type { Product } from "@shared/schema";
 import weighScaleIcon from "@assets/weight-scale_1774801344716.png";
 import piecesIcon from "@assets/cutlery_1774801395283.png";
 import servesIcon from "@assets/hot-food_1774801420499.png";
+import giftCardIconImg from "@/assets/gift-card.png";
+import tagIconImg from "@/assets/tag.png";
 
 import fishImg from "@assets/Gemini_Generated_Image_w6wqkkw6wqkkw6wq_(1)_1772713077919.png";
 import prawnsImg from "@assets/Gemini_Generated_Image_5xy0sd5xy0sd5xy0_1772713090650.png";
@@ -44,19 +47,37 @@ function CouponCard({ code, description }: { code: string; description: string; 
     setTimeout(() => setCopied(false), 2000);
   };
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-background hover:bg-muted/20 transition-colors">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center shrink-0">
-          <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-        </div>
-        <div className="min-w-0">
-          <span className="font-mono font-bold text-sm text-foreground tracking-widest border border-dashed border-border/60 rounded px-1.5 py-0.5 bg-muted/40">{code}</span>
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">{description}</p>
+    <div className="flex items-center justify-between px-4 py-3 bg-background hover:bg-muted/10 transition-colors">
+      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+        <span
+          aria-hidden
+          className="w-6 h-6 shrink-0 inline-block mt-0.5"
+          style={{
+            backgroundColor: "#364F9F",
+            WebkitMaskImage: `url(${tagIconImg})`,
+            maskImage: `url(${tagIconImg})`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+          }}
+        />
+        <div className="min-w-0 flex-1">
+          <span
+            className="font-mono font-bold text-xs tracking-wider rounded-full px-2.5 py-0.5 text-white inline-block"
+            style={{ backgroundColor: "#F05B4E" }}
+          >
+            {code}
+          </span>
+          <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words leading-snug">{description}</p>
         </div>
       </div>
       <button
         onClick={copy}
-        className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 ml-3 shrink-0 transition-colors"
+        className="flex items-center gap-1 text-xs font-semibold ml-3 shrink-0 transition-colors hover:opacity-80"
+        style={{ color: "#364F9F" }}
       >
         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
         {copied ? "Copied" : "Copy"}
@@ -111,6 +132,7 @@ export default function ProductDetail() {
   const productId = params?.id;
   const product = products?.find((p) => p.id === productId);
   const isUnavailable = product?.status === "unavailable";
+  const [offersExpanded, setOffersExpanded] = useState(false);
 
   const { coupons: liveCoupons } = useProductCoupons(productId, product?.couponIds ?? []);
 
@@ -205,51 +227,47 @@ export default function ProductDetail() {
             {/* Description */}
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{product.description || dummy.description}</p>
 
-            {/* Pieces / Serves — custom icons */}
+            {/* Pieces / Serves / Weight — all in one row */}
             <div className="flex items-stretch gap-0 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/20">
-              {[
-                { label: "Pieces", value: product.pieces || dummy.pieces, icon: piecesIcon },
-                { label: "Serves", value: product.serves || dummy.serves, icon: servesIcon },
-              ].map(({ label, value, icon }) => (
-                <div key={label} className="flex-1 flex items-center gap-3 py-4 px-4">
-                  <div className="flex flex-col items-center shrink-0">
-                    <img src={icon} alt={label} className="w-7 h-7 object-contain object-bottom dark:invert" />
-                    <span className="text-[10px] text-muted-foreground mt-1 font-medium">{label}</span>
-                  </div>
-                  <span className="text-sm font-bold text-foreground leading-tight">{value}</span>
+              <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
+                <div className="flex flex-col items-center shrink-0">
+                  <img src={piecesIcon} alt="Pieces" className="w-6 h-6 object-contain object-bottom dark:invert" />
+                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Pieces</span>
                 </div>
-              ))}
-            </div>
-
-            {/* Gross / Net Weight row — only shown when at least one is set */}
-            {(product.grossWeight || product.netWeight) && (
-              <div className="flex items-stretch gap-0 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/10">
-                {product.grossWeight && (
-                  <div className="flex-1 flex items-center gap-3 py-3 px-4">
-                    <div className="flex flex-col items-center shrink-0">
-                      <img src={weighScaleIcon} alt="Gross Weight" className="w-6 h-6 object-contain object-bottom dark:invert opacity-60" />
-                      <span className="text-[10px] text-muted-foreground mt-1 font-medium">Gross Wt</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-foreground">{product.grossWeight}</span>
-                      <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Before cleaning</p>
-                    </div>
-                  </div>
-                )}
-                {product.netWeight && (
-                  <div className="flex-1 flex items-center gap-3 py-3 px-4">
-                    <div className="flex flex-col items-center shrink-0">
-                      <img src={weighScaleIcon} alt="Net Weight" className="w-6 h-6 object-contain object-bottom dark:invert" />
-                      <span className="text-[10px] text-muted-foreground mt-1 font-medium">Net Wt</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-foreground">{product.netWeight}</span>
-                      <p className="text-[10px] text-muted-foreground leading-none mt-0.5">You receive</p>
-                    </div>
-                  </div>
-                )}
+                <span className="text-sm font-bold text-foreground leading-tight truncate">{product.pieces || dummy.pieces}</span>
               </div>
-            )}
+
+              <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
+                <div className="flex flex-col items-center shrink-0">
+                  <img src={servesIcon} alt="Serves" className="w-6 h-6 object-contain object-bottom dark:invert" />
+                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Serves</span>
+                </div>
+                <span className="text-sm font-bold text-foreground leading-tight truncate">{product.serves || dummy.serves}</span>
+              </div>
+
+              {(product.grossWeight || product.netWeight) && (
+                <div className="flex-1 flex items-center gap-2 py-3 px-3 min-w-0">
+                  <div className="flex flex-col items-center shrink-0">
+                    <img src={weighScaleIcon} alt="Weight" className="w-6 h-6 object-contain object-bottom dark:invert" />
+                    <span className="text-[10px] text-muted-foreground mt-1 font-medium">Weight</span>
+                  </div>
+                  <div className="min-w-0 leading-tight">
+                    {product.grossWeight && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-sm font-bold text-foreground">{product.grossWeight}</span>
+                        <span className="text-[10px] text-muted-foreground">gross</span>
+                      </div>
+                    )}
+                    {product.netWeight && (
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-sm font-bold text-foreground">{product.netWeight}</span>
+                        <span className="text-[10px] text-muted-foreground">net</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Price */}
             <div className="bg-muted/30 border border-border/30 rounded-2xl px-5 py-4">
@@ -287,18 +305,47 @@ export default function ProductDetail() {
               </Button>
             </div>
 
-            {/* Available Offers */}
+            {/* Available Offers — collapsible (matches Order Summary styling) */}
             {liveCoupons.length > 0 && (
               <div className="border border-border/40 rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
-                  <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-                  <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Available Offers</h3>
-                </div>
-                <div className="flex flex-col divide-y divide-border/30">
-                  {liveCoupons.map((c) => (
-                    <CouponCard key={c.id} code={c.code} description={c.description} color={c.color} />
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setOffersExpanded(s => !s)}
+                  className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20 hover:bg-muted/30 transition-colors"
+                  data-testid="button-toggle-offers"
+                >
+                  <span
+                    aria-hidden
+                    className="w-5 h-5 shrink-0 inline-block"
+                    style={{
+                      backgroundColor: "#364F9F",
+                      WebkitMaskImage: `url(${giftCardIconImg})`,
+                      maskImage: `url(${giftCardIconImg})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <div className="flex-1 text-left min-w-0">
+                    <span className="text-sm font-semibold text-foreground">
+                      Offers Available
+                    </span>
+                  </div>
+                  {offersExpanded
+                    ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                    : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                </button>
+
+                {offersExpanded && (
+                  <div className="flex flex-col divide-y divide-border/20 border-t border-border/20">
+                    {liveCoupons.map((c) => (
+                      <CouponCard key={c.id} code={c.code} description={c.description} color={c.color} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

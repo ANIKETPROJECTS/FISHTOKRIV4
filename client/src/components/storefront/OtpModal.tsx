@@ -4,7 +4,7 @@ import { useCustomer } from "@/context/CustomerContext";
 import Lottie from "lottie-react";
 import fishAnimation from "@assets/fish_1776404909449.json";
 import otpAnimation from "@assets/animation-original_1776421716629.json";
-import successAnimation from "@assets/animation-original_(1)_1776422004368.json";
+import successAnimation from "@assets/animation-original_(10)_1777277220026.json";
 import flagImg from "@assets/flag_(1)_1776403319572.png";
 import { FishTokriLogo } from "@/components/storefront/FishTokriLogo";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -199,8 +199,11 @@ export function OtpModal({ open, onClose }: OtpModalProps) {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="absolute inset-0 z-50 flex items-center justify-center bg-white"
+              className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-white"
             >
+              <div className="mb-4">
+                <FishTokriLogo className="h-16 w-auto" />
+              </div>
               <div className="w-72 h-72">
                 <Lottie animationData={successAnimation} loop={false} autoplay />
               </div>
