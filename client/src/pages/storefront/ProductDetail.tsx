@@ -238,12 +238,12 @@ export default function ProductDetail() {
             {/* Description */}
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{product.description || dummy.description}</p>
 
-            {/* Pieces / Serves / Weight — icon and value inline, single row on all viewports */}
+            {/* Pieces / Serves / Weight — single row; weight stacks gross/net on mobile, inline on desktop */}
             <div className="flex items-center justify-between sm:justify-start gap-x-3 sm:gap-x-6 py-1 text-black dark:text-white whitespace-nowrap">
-              <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <span
                   aria-hidden
-                  className="w-5 h-5 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
+                  className="w-6 h-6 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
                   style={{
                     WebkitMaskImage: `url(${piecesIcon})`,
                     maskImage: `url(${piecesIcon})`,
@@ -255,15 +255,15 @@ export default function ProductDetail() {
                     maskPosition: "center",
                   }}
                 />
-                <span className="text-xs sm:text-lg font-semibold leading-tight">
+                <span className="text-sm sm:text-lg font-semibold leading-tight">
                   {product.pieces || dummy.pieces}
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+              <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                 <span
                   aria-hidden
-                  className="w-5 h-5 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
+                  className="w-6 h-6 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
                   style={{
                     WebkitMaskImage: `url(${servesIcon})`,
                     maskImage: `url(${servesIcon})`,
@@ -275,16 +275,16 @@ export default function ProductDetail() {
                     maskPosition: "center",
                   }}
                 />
-                <span className="text-xs sm:text-lg font-semibold leading-tight">
+                <span className="text-sm sm:text-lg font-semibold leading-tight">
                   {product.serves || dummy.serves}
                 </span>
               </div>
 
               {(product.grossWeight || product.netWeight) && (
-                <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                   <span
                     aria-hidden
-                    className="w-5 h-5 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
+                    className="w-6 h-6 sm:w-7 sm:h-7 inline-block shrink-0 bg-black dark:bg-white"
                     style={{
                       WebkitMaskImage: `url(${weighScaleIcon})`,
                       maskImage: `url(${weighScaleIcon})`,
@@ -296,7 +296,7 @@ export default function ProductDetail() {
                       maskPosition: "center",
                     }}
                   />
-                  <div className="flex items-baseline gap-1 leading-tight text-xs sm:text-lg font-semibold">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-1 leading-tight text-sm sm:text-lg font-semibold">
                     {product.grossWeight && (
                       <span>
                         {product.grossWeight}
@@ -304,7 +304,7 @@ export default function ProductDetail() {
                       </span>
                     )}
                     {product.grossWeight && product.netWeight && (
-                      <span className="font-normal opacity-50">/</span>
+                      <span className="hidden sm:inline font-normal opacity-50">/</span>
                     )}
                     {product.netWeight && (
                       <span>
