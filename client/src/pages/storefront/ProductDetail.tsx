@@ -20,6 +20,7 @@ import type { Product } from "@shared/schema";
 import weighScaleIcon from "@assets/weight-scale_1774801344716.png";
 import piecesIcon from "@assets/cutlery_1774801395283.png";
 import servesIcon from "@assets/hot-food_1774801420499.png";
+import iconTimeImg from "@assets/time_1776949603776.png";
 import giftCardIconImg from "@/assets/gift-card.png";
 import tagIconImg from "@/assets/tag.png";
 import Lottie from "lottie-react";
@@ -107,13 +108,35 @@ function RecipeCard({
         />
       </div>
       <div className="p-4 flex flex-col flex-1 gap-2">
-        <h4 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{recipe.name}</h4>
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">{recipe.description}</p>
-        <div className="flex items-center justify-between mt-2">
-          <span className="text-xs text-muted-foreground">⏱ {recipe.totalTime}</span>
+        <h4 className="font-medium text-base text-foreground leading-snug line-clamp-2">{recipe.name}</h4>
+        <p className="text-xs font-light text-muted-foreground leading-relaxed line-clamp-3 flex-1">{recipe.description}</p>
+        <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <span
+                aria-hidden
+                className="w-3.5 h-3.5 inline-block"
+                style={{
+                  backgroundColor: "#364F9F",
+                  WebkitMaskImage: `url(${iconTimeImg})`,
+                  maskImage: `url(${iconTimeImg})`,
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
+                }}
+              />
+              {recipe.totalTime}
+            </span>
+            {recipe.difficulty && (
+              <span className="px-2 py-0.5 rounded-full font-medium text-[11px] bg-[#364F9F] text-white">{recipe.difficulty}</span>
+            )}
+          </div>
           <button
             onClick={() => onViewRecipe(category, index)}
-            className="text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1 hover:bg-accent hover:text-white transition-colors"
+            className="text-xs font-semibold bg-accent text-white border border-accent rounded-full px-3 py-1 hover:bg-[#364F9F] hover:border-[#364F9F] hover:text-white transition-colors"
           >
             View Recipe
           </button>
@@ -404,7 +427,7 @@ export default function ProductDetail() {
         {/* ── Explore New Recipes ── */}
         <section className="mb-14">
           <div className="flex items-center gap-2 mb-5">
-            <div className="w-9 h-9 shrink-0">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0">
               <Lottie animationData={recipesIconAnim} loop autoplay />
             </div>
             <h2 className="text-lg sm:text-xl font-medium text-foreground">Explore New Recipes</h2>
@@ -427,22 +450,37 @@ export default function ProductDetail() {
                       )}
                     </div>
                     <div className="p-4 flex flex-col flex-1 gap-2">
-                      <h4 className="font-bold text-sm text-foreground leading-snug line-clamp-2">{r.title}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">{r.description}</p>
+                      <h4 className="font-medium text-base text-foreground leading-snug line-clamp-2">{r.title}</h4>
+                      <p className="text-xs font-light text-muted-foreground leading-relaxed line-clamp-3 flex-1">{r.description}</p>
                       <div className="flex items-center justify-between mt-2 flex-wrap gap-2">
                         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          {r.totalTime && <span>⏱ {r.totalTime}</span>}
+                          {r.totalTime && (
+                            <span className="inline-flex items-center gap-1">
+                              <span
+                                aria-hidden
+                                className="w-3.5 h-3.5 inline-block"
+                                style={{
+                                  backgroundColor: "#364F9F",
+                                  WebkitMaskImage: `url(${iconTimeImg})`,
+                                  maskImage: `url(${iconTimeImg})`,
+                                  WebkitMaskRepeat: "no-repeat",
+                                  maskRepeat: "no-repeat",
+                                  WebkitMaskSize: "contain",
+                                  maskSize: "contain",
+                                  WebkitMaskPosition: "center",
+                                  maskPosition: "center",
+                                }}
+                              />
+                              {r.totalTime}
+                            </span>
+                          )}
                           {r.difficulty && (
-                            <span className={`px-2 py-0.5 rounded-full font-medium text-[11px] ${
-                              r.difficulty === "Easy" ? "bg-green-100 text-green-700" :
-                              r.difficulty === "Hard" ? "bg-red-100 text-red-700" :
-                              "bg-yellow-100 text-yellow-700"
-                            }`}>{r.difficulty}</span>
+                            <span className="px-2 py-0.5 rounded-full font-medium text-[11px] bg-[#364F9F] text-white">{r.difficulty}</span>
                           )}
                         </div>
                         <button
                           onClick={() => setLocation(`/recipe/product/${product.id}/${idx}`)}
-                          className="text-xs font-semibold text-accent border border-accent rounded-full px-3 py-1 hover:bg-accent hover:text-white transition-colors"
+                          className="text-xs font-semibold bg-accent text-white border border-accent rounded-full px-3 py-1 hover:bg-[#364F9F] hover:border-[#364F9F] hover:text-white transition-colors"
                         >
                           View Recipe
                         </button>
@@ -475,7 +513,7 @@ export default function ProductDetail() {
         {recommended.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center gap-2 mb-5">
-              <div className="w-9 h-9 shrink-0">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0">
                 <Lottie animationData={mayAlsoLikeAnim} loop autoplay />
               </div>
               <h2 className="text-lg sm:text-xl font-medium text-foreground">
