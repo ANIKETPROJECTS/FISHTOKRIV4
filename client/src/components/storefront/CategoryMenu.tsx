@@ -149,7 +149,7 @@ export function CategoryMenuDropdown({ open, onClose }: Props) {
                 <button
                   key={product.id}
                   onClick={() => handleProductClick(product)}
-                  className="text-left text-sm text-slate-600 hover:text-accent font-medium py-3 px-2 border-b border-slate-100 hover:bg-accent/5 sm:hover:bg-white rounded transition-colors"
+                  className="text-left text-sm sm:text-base text-slate-700 hover:text-accent font-medium py-3 px-2 border-b border-slate-100 hover:bg-accent/5 sm:hover:bg-white rounded transition-colors"
                   data-testid={`menu-product-${product.id}`}
                 >
                   {product.name}

@@ -246,11 +246,11 @@ export function LocationPicker() {
   const geoCfg = geoStatus !== "idle" ? geoConfigs[geoStatus as keyof typeof geoConfigs] : null;
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-stretch sm:items-center justify-end sm:justify-center">
+    <div className="fixed inset-0 z-[300] flex items-stretch justify-end">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closePicker} />
 
-      {/* Main panel — full screen slide-from-right on mobile, centered modal on desktop */}
-      <div className="relative bg-white w-full h-full sm:h-auto sm:max-w-xl rounded-none sm:rounded-3xl shadow-2xl flex flex-col animate-in slide-in-from-right sm:slide-in-from-bottom-0 duration-300 sm:duration-200 max-h-screen sm:max-h-[80vh]">
+      {/* Main panel — slide-in from right on both mobile and desktop, like the cart */}
+      <div className="relative bg-white w-full h-full sm:max-w-md rounded-none border-l border-border/30 shadow-2xl flex flex-col animate-in slide-in-from-right duration-300 max-h-screen">
 
         {/* Header */}
         <div className="flex items-start gap-3 px-5 pt-5 pb-3 border-b border-border/30 shrink-0">

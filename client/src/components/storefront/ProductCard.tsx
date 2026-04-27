@@ -93,7 +93,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Button
             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
             disabled={isUnavailable}
-            className="rounded-full w-8 h-8 p-0 bg-primary hover:bg-primary/90 text-white shadow-md flex items-center justify-center shrink-0"
+            className="rounded-full w-8 h-8 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
             size="icon"
           >
             {isUnavailable ? <span className="text-[10px]">Out</span> : <Plus className="w-5 h-5 text-white" />}
