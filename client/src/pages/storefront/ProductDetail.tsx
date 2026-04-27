@@ -238,12 +238,12 @@ export default function ProductDetail() {
             {/* Description */}
             <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{product.description || dummy.description}</p>
 
-            {/* Pieces / Serves / Weight — all in one row, vertically stacked per cell */}
-            <div className="grid grid-cols-3 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/20">
-              <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+            {/* Pieces / Serves / Weight — icon and value inline, no background card */}
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-3 py-1">
+              <div className="flex items-center gap-2 min-w-0">
                 <span
                   aria-hidden
-                  className="w-5 h-5 inline-block"
+                  className="w-5 h-5 inline-block shrink-0"
                   style={{
                     backgroundColor: "#364F9F",
                     WebkitMaskImage: `url(${piecesIcon})`,
@@ -256,19 +256,18 @@ export default function ProductDetail() {
                     maskPosition: "center",
                   }}
                 />
-                <span className="text-[10px] text-muted-foreground mt-1 font-medium">Pieces</span>
                 <span
-                  className="text-xs sm:text-sm font-semibold mt-1 leading-tight break-words"
+                  className="text-xs sm:text-sm font-semibold leading-tight"
                   style={{ color: "#F05B4E" }}
                 >
                   {product.pieces || dummy.pieces}
                 </span>
               </div>
 
-              <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+              <div className="flex items-center gap-2 min-w-0">
                 <span
                   aria-hidden
-                  className="w-5 h-5 inline-block"
+                  className="w-5 h-5 inline-block shrink-0"
                   style={{
                     backgroundColor: "#364F9F",
                     WebkitMaskImage: `url(${servesIcon})`,
@@ -281,9 +280,8 @@ export default function ProductDetail() {
                     maskPosition: "center",
                   }}
                 />
-                <span className="text-[10px] text-muted-foreground mt-1 font-medium">Serves</span>
                 <span
-                  className="text-xs sm:text-sm font-semibold mt-1 leading-tight break-words"
+                  className="text-xs sm:text-sm font-semibold leading-tight"
                   style={{ color: "#F05B4E" }}
                 >
                   {product.serves || dummy.serves}
@@ -291,10 +289,10 @@ export default function ProductDetail() {
               </div>
 
               {(product.grossWeight || product.netWeight) && (
-                <div className="flex flex-col items-center text-center py-3 px-2 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <span
                     aria-hidden
-                    className="w-5 h-5 inline-block"
+                    className="w-5 h-5 inline-block shrink-0"
                     style={{
                       backgroundColor: "#364F9F",
                       WebkitMaskImage: `url(${weighScaleIcon})`,
@@ -307,19 +305,21 @@ export default function ProductDetail() {
                       maskPosition: "center",
                     }}
                   />
-                  <span className="text-[10px] text-muted-foreground mt-1 font-medium">Weight</span>
-                  <div className="mt-1 leading-tight">
+                  <div className="leading-tight text-xs sm:text-sm font-semibold" style={{ color: "#F05B4E" }}>
                     {product.grossWeight && (
-                      <div className="text-[11px] sm:text-xs">
-                        <span className="font-semibold" style={{ color: "#F05B4E" }}>{product.grossWeight}</span>
-                        <span className="text-muted-foreground ml-0.5">gross</span>
-                      </div>
+                      <span>
+                        {product.grossWeight}
+                        <span className="text-muted-foreground font-normal ml-0.5">gross</span>
+                      </span>
+                    )}
+                    {product.grossWeight && product.netWeight && (
+                      <span className="text-muted-foreground font-normal mx-1">/</span>
                     )}
                     {product.netWeight && (
-                      <div className="text-[11px] sm:text-xs">
-                        <span className="font-semibold" style={{ color: "#F05B4E" }}>{product.netWeight}</span>
-                        <span className="text-muted-foreground ml-0.5">net</span>
-                      </div>
+                      <span>
+                        {product.netWeight}
+                        <span className="text-muted-foreground font-normal ml-0.5">net</span>
+                      </span>
                     )}
                   </div>
                 </div>
