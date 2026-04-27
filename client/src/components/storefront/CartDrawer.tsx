@@ -19,6 +19,7 @@ import iconHomeTypeImg from "@assets/home_1776927604826.png";
 import iconBriefcaseImg from "@assets/briefcase_1776927648499.png";
 import iconShippingHomeImg from "@assets/home_1776927604826.png";
 import iconTimeImg from "@assets/time_1776949603776.png";
+import iconScheduleImg from "@assets/schedule_1777284518383.png";
 import notesIconImg from "@/assets/notes.png";
 import giftCardIconImg from "@/assets/gift-card.png";
 import tagIconImg from "@/assets/tag.png";
@@ -252,7 +253,31 @@ export function CartDrawer() {
     return now < slotEnd;
   }, []);
 
-  const availableTimeslots = timeslots.filter(isSlotAvailable);
+  const nextDayDate = new Date();
+  nextDayDate.setDate(nextDayDate.getDate() + 1);
+  const nextDayLabel = nextDayDate.toLocaleDateString("en-IN", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+
+  const NEXT_DAY_TIMESLOT: Timeslot & { isNextDay?: boolean } = {
+    id: "next-day",
+    label: `Next Day Delivery · ${nextDayLabel}`,
+    startTime: "7:00 AM",
+    endTime: "9:00 PM",
+    isInstant: false,
+    extraCharge: 0,
+    isActive: true,
+    sortOrder: 999,
+    isNextDay: true,
+  } as any;
+
+  const filteredTimeslots = timeslots.filter(isSlotAvailable);
+  const availableTimeslots: (Timeslot & { isNextDay?: boolean })[] = [
+    ...filteredTimeslots,
+    NEXT_DAY_TIMESLOT,
+  ];
 
   const selectedTimeslot = availableTimeslots.find(t => t.id === selectedTimeslotId) ?? null;
 
@@ -462,9 +487,12 @@ export function CartDrawer() {
     }
     const fullAddress = [selected.building, selected.street, selected.area, selected.pincode].filter(Boolean).join(", ");
     const orderItems = items.map(i => ({ productId: i.id, quantity: i.quantity, name: i.name, price: i.price, imageUrl: i.imageUrl ?? null }));
+    const isNextDay = (selectedTimeslot as any).isNextDay === true;
     const slotLabel = selectedTimeslot.isInstant
       ? "Instant Delivery (Porter)"
-      : `${selectedTimeslot.label} (${selectedTimeslot.startTime} – ${selectedTimeslot.endTime})`;
+      : isNextDay
+        ? selectedTimeslot.label
+        : `${selectedTimeslot.label} (${selectedTimeslot.startTime} – ${selectedTimeslot.endTime})`;
     createOrder(
       {
         customerName: selected.name || customer?.name || "",
@@ -473,7 +501,7 @@ export function CartDrawer() {
         address: fullAddress,
         notes: selected.instructions,
         items: orderItems,
-        deliveryType: selectedTimeslot.isInstant ? "instant" : "slot",
+        deliveryType: selectedTimeslot.isInstant ? "instant" : isNextDay ? "next-day" : "slot",
         timeslotLabel: slotLabel,
         instantDeliveryCharge: selectedTimeslot.isInstant ? selectedTimeslot.extraCharge : null,
         couponCode: appliedCoupon?.code ?? null,
@@ -1182,7 +1210,9 @@ export function CartDrawer() {
                               No slots available for today
                             </div>
                           ) : (
-                            availableTimeslots.map(slot => (
+                            availableTimeslots.map(slot => {
+                              const isNextDay = (slot as any).isNextDay === true;
+                              return (
                               <button
                                 key={slot.id}
                                 type="button"
@@ -1194,9 +1224,26 @@ export function CartDrawer() {
                                   <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selectedTimeslotId === slot.id ? (slot.isInstant ? "border-amber-500" : "border-[#364F9F]") : "border-slate-300"}`}>
                                     {selectedTimeslotId === slot.id && <div className={`w-2 h-2 rounded-full ${slot.isInstant ? "bg-amber-500" : "bg-[#364F9F]"}`} />}
                                   </div>
-                                  <span className={`text-sm font-semibold flex-1 min-w-0 truncate ${slot.isInstant ? "text-amber-700" : "text-foreground"}`}>
+                                  {isNextDay && (
+                                    <span
+                                      aria-hidden
+                                      className="w-4 h-4 inline-block flex-shrink-0"
+                                      style={{
+                                        backgroundColor: "#364F9F",
+                                        WebkitMaskImage: `url(${iconScheduleImg})`,
+                                        maskImage: `url(${iconScheduleImg})`,
+                                        WebkitMaskRepeat: "no-repeat",
+                                        maskRepeat: "no-repeat",
+                                        WebkitMaskSize: "contain",
+                                        maskSize: "contain",
+                                        WebkitMaskPosition: "center",
+                                        maskPosition: "center",
+                                      }}
+                                    />
+                                  )}
+                                  <span className={`text-sm font-semibold flex-1 min-w-0 truncate ${slot.isInstant ? "text-amber-700" : isNextDay ? "text-[#364F9F]" : "text-foreground"}`}>
                                     {slot.label}
-                                    {slot.startTime && slot.endTime && (
+                                    {!isNextDay && slot.startTime && slot.endTime && (
                                       <span className="font-normal text-muted-foreground"> · {slot.startTime}–{slot.endTime}</span>
                                     )}
                                   </span>
@@ -1207,7 +1254,7 @@ export function CartDrawer() {
                                   ) : null}
                                 </div>
                               </button>
-                            ))
+                            );})
                           )}
                         </div>
                     </div>
