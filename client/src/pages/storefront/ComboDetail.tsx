@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ChevronLeft, ShoppingBag, Check, Utensils, Copy, ChefHat,
+  ChevronLeft, ShoppingBag, Check, Copy, ChefHat,
   ExternalLink, Star, Sparkles, ShoppingBasket,
 } from "lucide-react";
 import { useState, useRef } from "react";
@@ -24,6 +24,7 @@ import piecesIcon from "@assets/cutlery_1774801395283.png";
 import servesIcon from "@assets/hot-food_1774801420499.png";
 import giftCardIconImg from "@/assets/gift-card.png";
 import tagIconImg from "@/assets/tag.png";
+import checkedIconImg from "@/assets/checked.png";
 
 import fishImg from "@assets/Gemini_Generated_Image_w6wqkkw6wqkkw6wq_(1)_1772713077919.png";
 import prawnsImg from "@assets/Gemini_Generated_Image_5xy0sd5xy0sd5xy0_1772713090650.png";
@@ -78,17 +79,6 @@ function ComboHeroImage({ productImages, productCategories, name, tags }: {
           </div>
         )}
       </div>
-
-      {/* Tags overlay */}
-      {tags.length > 0 && (
-        <div className="absolute top-4 left-4 flex gap-2 flex-wrap">
-          {tags.map((tag) => (
-            <span key={tag} className="text-xs font-bold bg-primary text-white px-3 py-1 rounded-full shadow-sm backdrop-blur-sm">
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
 
       {/* Combo badge */}
       <div className="absolute bottom-4 right-4">
@@ -167,40 +157,40 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
 
   return (
     <Link href={product ? `/product/${product.id}` : "#"}>
-      <div className="flex items-start gap-3 py-3 group cursor-pointer">
-        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/30 mt-0.5">
+      <div className="flex items-start gap-4 py-4 group cursor-pointer">
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 bg-muted/30 border border-border/30">
           <img src={img} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-              <Check className="w-3 h-3 text-white" />
-            </div>
-            <span className="text-sm font-semibold text-foreground leading-snug line-clamp-1 group-hover:text-primary transition-colors">
+          <div className="flex items-start justify-between gap-2">
+            <span className="text-base sm:text-lg font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
               {item.label}
             </span>
+            {product && (
+              <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
+            )}
           </div>
           {product && (
-            <p className="text-xs text-muted-foreground ml-6 line-clamp-1">
+            <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
               {product.category}
               {product.unit ? ` · ${product.unit}` : product.weight ? ` · ${product.weight}` : ""}
             </p>
           )}
           {showPricing && discountedPrice != null && (
-            <div className="flex items-center gap-2 ml-6 mt-1">
-              <span className="text-sm font-bold text-foreground">₹{discountedPrice}</span>
-              <span className="text-xs text-muted-foreground line-through">₹{basePrice}</span>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="text-base sm:text-lg font-bold text-foreground">₹{discountedPrice}</span>
+              <span className="text-sm text-muted-foreground line-through">₹{basePrice}</span>
             </div>
           )}
 
-          {/* Pieces / Serves / Weight — same icon row as single product */}
+          {/* Pieces / Serves / Weight — wraps on mobile so nothing collides or hides */}
           {hasStats && (
-            <div className="flex items-center gap-x-2.5 sm:gap-x-3.5 mt-2 ml-6 text-black dark:text-white whitespace-nowrap overflow-x-auto scrollbar-hide">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2 text-black dark:text-white">
               {piecesText && (
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
                     aria-hidden
-                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    className="w-4 h-4 sm:w-5 sm:h-5 inline-block shrink-0 bg-black dark:bg-white"
                     style={{
                       WebkitMaskImage: `url(${piecesIcon})`,
                       maskImage: `url(${piecesIcon})`,
@@ -212,19 +202,15 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
                       maskPosition: "center",
                     }}
                   />
-                  <span className="text-[11px] sm:text-xs font-semibold leading-tight">{piecesText}</span>
+                  <span className="text-xs sm:text-sm font-semibold leading-tight">{piecesText}</span>
                 </div>
-              )}
-
-              {piecesText && servesText && (
-                <span aria-hidden className="block w-px h-4 bg-black/40 dark:bg-white/40 shrink-0" />
               )}
 
               {servesText && (
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
                     aria-hidden
-                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    className="w-4 h-4 sm:w-5 sm:h-5 inline-block shrink-0 bg-black dark:bg-white"
                     style={{
                       WebkitMaskImage: `url(${servesIcon})`,
                       maskImage: `url(${servesIcon})`,
@@ -236,19 +222,15 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
                       maskPosition: "center",
                     }}
                   />
-                  <span className="text-[11px] sm:text-xs font-semibold leading-tight">{servesText}</span>
+                  <span className="text-xs sm:text-sm font-semibold leading-tight">{servesText}</span>
                 </div>
-              )}
-
-              {(piecesText || servesText) && hasGrossOrNet && (
-                <span aria-hidden className="block w-px h-4 bg-black/40 dark:bg-white/40 shrink-0" />
               )}
 
               {hasGrossOrNet && (
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
                     aria-hidden
-                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    className="w-4 h-4 sm:w-5 sm:h-5 inline-block shrink-0 bg-black dark:bg-white"
                     style={{
                       WebkitMaskImage: `url(${weighScaleIcon})`,
                       maskImage: `url(${weighScaleIcon})`,
@@ -260,7 +242,7 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
                       maskPosition: "center",
                     }}
                   />
-                  <div className="flex items-baseline gap-1 leading-tight text-[11px] sm:text-xs font-semibold">
+                  <div className="flex items-baseline gap-1 leading-tight text-xs sm:text-sm font-semibold">
                     {product?.grossWeight && (
                       <span>
                         {product.grossWeight}
@@ -282,9 +264,6 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
             </div>
           )}
         </div>
-        {product && (
-          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
-        )}
       </div>
     </Link>
   );
@@ -543,10 +522,25 @@ export default function ComboDetail() {
             {/* Name + badges */}
             <div>
               <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <Badge className="bg-primary/10 text-primary border-primary/20 font-bold text-xs">Combo Pack</Badge>
-                <Badge variant="secondary" className="text-xs font-medium">{combo.includes.length} Items</Badge>
+                <span
+                  className="text-xs font-bold tracking-wide rounded-full px-2.5 py-0.5 text-white inline-block"
+                  style={{ backgroundColor: "#F05B4E" }}
+                >
+                  Combo Pack
+                </span>
+                <span
+                  className="text-xs font-bold tracking-wide rounded-full px-2.5 py-0.5 text-white inline-block"
+                  style={{ backgroundColor: "#F05B4E" }}
+                >
+                  {combo.includes.length} Items
+                </span>
                 {combo.discount > 0 && (
-                  <Badge className="bg-green-500/10 text-green-700 border-green-200 text-xs font-bold">{combo.discount}% Off</Badge>
+                  <span
+                    className="text-xs font-bold tracking-wide rounded-full px-2.5 py-0.5 text-white inline-block"
+                    style={{ backgroundColor: "#F05B4E" }}
+                  >
+                    {combo.discount}% Off
+                  </span>
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">{combo.name}</h1>
@@ -557,57 +551,25 @@ export default function ComboDetail() {
               <p className="text-muted-foreground text-sm sm:text-base leading-relaxed">{combo.fullDescription}</p>
             )}
 
-            {/* Stats bar — with custom icons */}
-            <div className="flex items-stretch gap-0 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/20">
-              {[
-                { label: "Serves", value: combo.serves ?? "—", icon: servesIcon },
-                { label: "Weight", value: combo.weight ?? "—", icon: weighScaleIcon },
-                { label: "Items", value: `${combo.includes.length} items`, icon: piecesIcon },
-              ].map(({ label, value, icon }) => (
-                <div key={label} className="flex-1 flex items-center gap-2.5 py-4 px-3 sm:px-4">
-                  <div className="flex flex-col items-center shrink-0">
-                    <img src={icon} alt={label} className="w-7 h-7 object-contain object-bottom dark:invert" />
-                    <span className="text-[10px] text-muted-foreground mt-1 font-medium">{label}</span>
-                  </div>
-                  <span className="text-sm font-bold text-foreground leading-tight">{value}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Combo Gross / Net Weight — calculated from included products */}
-            {(comboGrossWeight || comboNetWeight) && (
-              <div className="flex items-stretch gap-0 divide-x divide-border border border-border/40 rounded-2xl overflow-hidden bg-muted/10">
-                {comboGrossWeight && (
-                  <div className="flex-1 flex items-center gap-3 py-3 px-4">
-                    <div className="flex flex-col items-center shrink-0">
-                      <img src={weighScaleIcon} alt="Gross Weight" className="w-6 h-6 object-contain object-bottom dark:invert opacity-60" />
-                      <span className="text-[10px] text-muted-foreground mt-1 font-medium">Gross Wt</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-foreground">{comboGrossWeight}</span>
-                      <p className="text-[10px] text-muted-foreground leading-none mt-0.5">Before cleaning</p>
-                    </div>
-                  </div>
-                )}
-                {comboNetWeight && (
-                  <div className="flex-1 flex items-center gap-3 py-3 px-4">
-                    <div className="flex flex-col items-center shrink-0">
-                      <img src={weighScaleIcon} alt="Net Weight" className="w-6 h-6 object-contain object-bottom dark:invert" />
-                      <span className="text-[10px] text-muted-foreground mt-1 font-medium">Net Wt</span>
-                    </div>
-                    <div>
-                      <span className="text-sm font-bold text-foreground">{comboNetWeight}</span>
-                      <p className="text-[10px] text-muted-foreground leading-none mt-0.5">You receive</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
             {/* What's Included */}
             <div>
-              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                <Utensils className="w-4 h-4 text-accent" /> What's Included
+              <h3 className="text-base sm:text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                <span
+                  aria-hidden
+                  className="w-5 h-5 sm:w-6 sm:h-6 inline-block shrink-0"
+                  style={{
+                    backgroundColor: "#F05B4E",
+                    WebkitMaskImage: `url(${checkedIconImg})`,
+                    maskImage: `url(${checkedIconImg})`,
+                    WebkitMaskRepeat: "no-repeat",
+                    maskRepeat: "no-repeat",
+                    WebkitMaskSize: "contain",
+                    maskSize: "contain",
+                    WebkitMaskPosition: "center",
+                    maskPosition: "center",
+                  }}
+                />
+                What's Included
               </h3>
               <div className="divide-y divide-border/30">
                 {includedProducts.map(({ item, product }, i) => (
