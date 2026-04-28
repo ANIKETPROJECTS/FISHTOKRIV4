@@ -255,36 +255,51 @@ export default function Home() {
                           <p className="text-sm text-muted-foreground mb-2.5 font-normal line-clamp-2">
                             {combo.description}
                           </p>
-                          <div className="flex items-center justify-between mt-auto pt-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-lg sm:text-xl font-semibold text-foreground">₹{combo.discountedPrice}</span>
-                              <span className="text-sm text-muted-foreground line-through">₹{combo.originalPrice}</span>
-                            </div>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                addToCart({
-                                  id: -Math.abs(parseInt(combo.id.slice(-6), 16) || 9999),
-                                  name: combo.name,
-                                  price: combo.discountedPrice,
-                                  category: "Combo",
-                                  status: "available",
-                                  unit: combo.weight,
-                                  imageUrl: null,
-                                  isArchived: false,
-                                  updatedAt: new Date(),
-                                  limitedStockNote: null,
-                                  sectionId: null,
-                                  isCombo: true,
-                                } as any);
-                              }}
-                              className="rounded-full w-9 h-9 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
-                              size="icon"
-                              data-testid={`button-add-combo-${combo.id}`}
-                            >
-                              <Plus className="w-5 h-5 text-white" />
-                            </Button>
-                          </div>
+                          {(() => {
+                            const computedPct = combo.originalPrice > 0
+                              ? Math.round(((combo.originalPrice - combo.discountedPrice) / combo.originalPrice) * 100)
+                              : 0;
+                            const showPct = combo.discount && combo.discount > 0 ? combo.discount : computedPct;
+                            return (
+                              <div className="flex items-center justify-between mt-auto pt-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-lg sm:text-xl font-semibold text-foreground">₹{combo.discountedPrice}</span>
+                                  {combo.originalPrice > combo.discountedPrice && (
+                                    <span className="text-sm text-muted-foreground line-through">₹{combo.originalPrice}</span>
+                                  )}
+                                  {showPct > 0 && (
+                                    <span className="text-sm font-semibold text-green-600" data-testid={`text-combo-discount-${combo.id}`}>
+                                      {showPct}% off
+                                    </span>
+                                  )}
+                                </div>
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    addToCart({
+                                      id: -Math.abs(parseInt(combo.id.slice(-6), 16) || 9999),
+                                      name: combo.name,
+                                      price: combo.discountedPrice,
+                                      category: "Combo",
+                                      status: "available",
+                                      unit: combo.weight,
+                                      imageUrl: null,
+                                      isArchived: false,
+                                      updatedAt: new Date(),
+                                      limitedStockNote: null,
+                                      sectionId: null,
+                                      isCombo: true,
+                                    } as any);
+                                  }}
+                                  className="rounded-full w-9 h-9 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
+                                  size="icon"
+                                  data-testid={`button-add-combo-${combo.id}`}
+                                >
+                                  <Plus className="w-5 h-5 text-white" />
+                                </Button>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
