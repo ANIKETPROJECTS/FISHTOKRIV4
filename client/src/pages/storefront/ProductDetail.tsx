@@ -177,7 +177,10 @@ export default function ProductDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+        <Header
+          onSearchSubmit={(q) => setLocation(q ? `/?q=${encodeURIComponent(q)}` : "/")}
+          collapsibleMobileSearch
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
           <Skeleton className="aspect-square rounded-3xl" />
           <div className="space-y-4">
@@ -194,7 +197,10 @@ export default function ProductDetail() {
   if (!product || !dummy) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Header />
+        <Header
+          onSearchSubmit={(q) => setLocation(q ? `/?q=${encodeURIComponent(q)}` : "/")}
+          collapsibleMobileSearch
+        />
         <p className="text-muted-foreground text-lg">Product not found.</p>
         <Button onClick={() => setLocation("/")}>Go Home</Button>
         <CartDrawer />

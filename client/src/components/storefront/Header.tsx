@@ -4,7 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useCustomer } from "@/context/CustomerContext";
 import { useHub } from "@/context/HubContext";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Mic, MicOff } from "lucide-react";
+import { ChevronDown, Mic, MicOff, Search as SearchIcon, X as XIcon } from "lucide-react";
 import { CategoryMenuDropdown } from "@/components/storefront/CategoryMenu";
 import { OtpModal } from "@/components/storefront/OtpModal";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
@@ -73,7 +73,15 @@ function TypewriterPlaceholder() {
   );
 }
 
-export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
+export function Header({
+  onSearch,
+  onSearchSubmit,
+  collapsibleMobileSearch,
+}: {
+  onSearch?: (query: string) => void;
+  onSearchSubmit?: (query: string) => void;
+  collapsibleMobileSearch?: boolean;
+}) {
   const { totalItems, setIsCartOpen } = useCart();
   const { customer } = useCustomer();
   const { selectedSubHub, selectedSuperHub, openPicker } = useHub();
@@ -83,7 +91,17 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
   const [searchFocused, setSearchFocused] = useState(false);
   const [otpModalOpen, setOtpModalOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const showSearchUI = !!(onSearch || onSearchSubmit);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearchSubmit?.(searchValue.trim());
+  };
+  const handleChange = (val: string) => {
+    setSearchValue(val);
+    onSearch?.(val);
+  };
 
   const startVoiceSearch = useCallback(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -137,8 +155,8 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
         </div>
 
         {/* Center: Search bar — desktop only */}
-        {onSearch && (
-          <div className="flex-1 max-w-md relative hidden sm:block">
+        {showSearchUI && (
+          <form onSubmit={handleSubmit} className="flex-1 max-w-md relative hidden sm:block">
             <img src={searchImg} alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 object-contain z-10" />
             {/* Typewriter placeholder shown when empty & unfocused */}
             {!searchValue && !searchFocused && (
@@ -151,10 +169,7 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
               value={searchValue}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              onChange={(e) => {
-                setSearchValue(e.target.value);
-                onSearch(e.target.value);
-              }}
+              onChange={(e) => handleChange(e.target.value)}
               className="w-full pl-10 pr-10 h-10 rounded-full bg-white border border-slate-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 text-sm transition-all"
               data-testid="input-search-desktop"
             />
@@ -167,11 +182,25 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
             >
               {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
-          </div>
+          </form>
         )}
 
         {/* Right: Icons */}
         <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
+          {/* Mobile-only search icon — toggles the search bar below */}
+          {showSearchUI && collapsibleMobileSearch && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`sm:hidden text-foreground hover:bg-accent/10 rounded-full w-9 h-9 transition-colors ${mobileSearchOpen ? "bg-accent/10" : ""}`}
+              onClick={() => setMobileSearchOpen(v => !v)}
+              aria-label={mobileSearchOpen ? "Close search" : "Open search"}
+              data-testid="button-toggle-mobile-search"
+            >
+              {mobileSearchOpen ? <XIcon className="w-5 h-5" /> : <SearchIcon className="w-5 h-5" />}
+            </Button>
+          )}
+
           {/* Category menu icon */}
           <Button
             variant="ghost"
@@ -231,10 +260,10 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
         onClose={() => setCategoryMenuOpen(false)}
       />
 
-      {/* Mobile pill search — always visible below header, mirrors desktop */}
-      {onSearch && (
+      {/* Mobile pill search — below header. In collapsible mode, only visible when toggled. */}
+      {showSearchUI && (!collapsibleMobileSearch || mobileSearchOpen) && (
         <div className="sm:hidden px-3 pb-2.5 pt-1 bg-white/95 backdrop-blur-sm">
-          <div className="relative">
+          <form onSubmit={handleSubmit} className="relative">
             <img src={searchImg} alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 object-contain z-10" />
             {!searchValue && !searchFocused && (
               <div className="absolute left-10 top-1/2 -translate-y-1/2 z-10">
@@ -243,10 +272,11 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
             )}
             <input
               type="search"
+              autoFocus={collapsibleMobileSearch && mobileSearchOpen}
               value={searchValue}
               onFocus={() => setSearchFocused(true)}
               onBlur={() => setSearchFocused(false)}
-              onChange={(e) => { setSearchValue(e.target.value); onSearch(e.target.value); }}
+              onChange={(e) => handleChange(e.target.value)}
               className="w-full pl-10 pr-10 h-10 rounded-full bg-white border border-slate-200 focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/10 text-sm transition-all"
               data-testid="input-search-mobile"
             />
@@ -259,7 +289,7 @@ export function Header({ onSearch }: { onSearch?: (query: string) => void }) {
             >
               {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
-          </div>
+          </form>
         </div>
       )}
     </header>

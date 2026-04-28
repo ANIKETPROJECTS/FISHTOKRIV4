@@ -458,7 +458,10 @@ export default function ComboDetail() {
   if (comboLoading) {
     return (
       <div className="min-h-screen bg-background font-sans">
-        <Header />
+        <Header
+          onSearchSubmit={(q) => navigate(q ? `/?q=${encodeURIComponent(q)}` : "/")}
+          collapsibleMobileSearch
+        />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <Skeleton className="aspect-square rounded-3xl" />
@@ -481,7 +484,10 @@ export default function ComboDetail() {
   if (!combo) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <Header />
+        <Header
+          onSearchSubmit={(q) => navigate(q ? `/?q=${encodeURIComponent(q)}` : "/")}
+          collapsibleMobileSearch
+        />
         <p className="text-muted-foreground text-lg">Combo not found.</p>
         <Button onClick={() => navigate("/")}>Go Home</Button>
         <CartDrawer />

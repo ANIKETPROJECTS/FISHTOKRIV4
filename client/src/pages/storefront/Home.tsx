@@ -67,9 +67,17 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [currentBanner, setCurrentBanner] = useState(0);
   const [view, setView] = useState<"home" | "category">("home");
-  const [searchQuery, setSearchQuery] = useState("");
+  const initialQ = (() => {
+    if (typeof window === "undefined") return "";
+    return new URLSearchParams(window.location.search).get("q") ?? "";
+  })();
+  const [searchQuery, setSearchQuery] = useState(initialQ);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (initialQ) setView("category");
+  }, [initialQ]);
 
   const catScrollRef = useRef<HTMLDivElement>(null);
 
