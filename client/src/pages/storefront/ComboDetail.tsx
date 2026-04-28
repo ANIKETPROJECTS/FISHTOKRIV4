@@ -1,5 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useCart } from "@/context/CartContext";
+import { useCoupons } from "@/hooks/use-coupons";
 import { Header } from "@/components/storefront/Header";
 import { CartDrawer } from "@/components/storefront/CartDrawer";
 import { ProductCard } from "@/components/storefront/ProductCard";
@@ -7,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  ChevronLeft, Tag, ShoppingBag, Check, Utensils, Package, Copy, ChefHat,
-  Flame, ExternalLink, Star, Sparkles, ShoppingBasket,
+  ChevronLeft, ShoppingBag, Check, Utensils, Copy, ChefHat,
+  ExternalLink, Star, Sparkles, ShoppingBasket,
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -21,45 +22,14 @@ import { getDummyDetail } from "@/lib/productDummyData";
 import weighScaleIcon from "@assets/weight-scale_1774801344716.png";
 import piecesIcon from "@assets/cutlery_1774801395283.png";
 import servesIcon from "@assets/hot-food_1774801420499.png";
+import giftCardIconImg from "@/assets/gift-card.png";
+import tagIconImg from "@/assets/tag.png";
 
 import fishImg from "@assets/Gemini_Generated_Image_w6wqkkw6wqkkw6wq_(1)_1772713077919.png";
 import prawnsImg from "@assets/Gemini_Generated_Image_5xy0sd5xy0sd5xy0_1772713090650.png";
 import chickenImg from "@assets/Gemini_Generated_Image_g0ecb4g0ecb4g0ec_1772713219972.png";
 import muttonImg from "@assets/Gemini_Generated_Image_8fq0338fq0338fq0_1772713565349.png";
 import masalaImg from "@assets/Gemini_Generated_Image_4e60a64e60a64e60_1772713888468.png";
-
-const COUPONS = [
-  { code: "FRESH10", desc: "10% off on your first order" },
-  { code: "SAVE15", desc: "15% off on orders above ₹500" },
-  { code: "TOKRI20", desc: "20% off for FishTokri members" },
-];
-
-const COMBO_RECIPES = [
-  {
-    name: "Surf & Turf Feast",
-    description: "Grill the seafood with lemon butter and pair with spiced mutton chops for a show-stopping surf & turf spread.",
-    image: "https://picsum.photos/seed/surf-turf/600/400",
-    totalTime: "50 min", difficulty: "Medium",
-  },
-  {
-    name: "Mixed Masala Tray Bake",
-    description: "Marinate all combo items in a bold Malvani masala and roast together in one tray for a fuss-free feast.",
-    image: "https://picsum.photos/seed/tray-bake/600/400",
-    totalTime: "1 hr 10 min", difficulty: "Easy",
-  },
-  {
-    name: "Combo Biryani",
-    description: "Layer the marinated combo meats over fragrant basmati rice and slow-cook dum-style for a royal biryani.",
-    image: "https://picsum.photos/seed/combo-biryani/600/400",
-    totalTime: "1 hr 30 min", difficulty: "Advanced",
-  },
-  {
-    name: "Coastal BBQ Night",
-    description: "Skewer the combo pieces, coat in a tangy tamarind glaze, and grill for the ultimate Mumbai coastal BBQ experience.",
-    image: "https://picsum.photos/seed/coastal-bbq/600/400",
-    totalTime: "45 min", difficulty: "Easy",
-  },
-];
 
 function getFallbackImage(category: string) {
   switch (category) {
@@ -132,20 +102,43 @@ function ComboHeroImage({ productImages, productCategories, name, tags }: {
 
 function CouponCard({ code, desc }: { code: string; desc: string }) {
   const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
   return (
-    <div className="flex items-center justify-between px-4 py-3 bg-background hover:bg-muted/20 transition-colors">
-      <div className="flex items-center gap-2.5 min-w-0">
-        <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center shrink-0">
-          <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-        </div>
-        <div className="min-w-0">
-          <span className="font-mono font-bold text-sm text-foreground tracking-widest border border-dashed border-border/60 rounded px-1.5 py-0.5 bg-muted/40">{code}</span>
-          <p className="text-xs text-muted-foreground mt-0.5 truncate">{desc}</p>
+    <div className="flex items-center justify-between px-4 py-3 bg-background hover:bg-muted/10 transition-colors">
+      <div className="flex items-start gap-2.5 min-w-0 flex-1">
+        <span
+          aria-hidden
+          className="w-6 h-6 shrink-0 inline-block mt-0.5"
+          style={{
+            backgroundColor: "#364F9F",
+            WebkitMaskImage: `url(${tagIconImg})`,
+            maskImage: `url(${tagIconImg})`,
+            WebkitMaskRepeat: "no-repeat",
+            maskRepeat: "no-repeat",
+            WebkitMaskSize: "contain",
+            maskSize: "contain",
+            WebkitMaskPosition: "center",
+            maskPosition: "center",
+          }}
+        />
+        <div className="min-w-0 flex-1">
+          <span
+            className="font-mono font-bold text-xs tracking-wider rounded-full px-2.5 py-0.5 text-white inline-block"
+            style={{ backgroundColor: "#F05B4E" }}
+          >
+            {code}
+          </span>
+          <p className="text-xs text-muted-foreground mt-1 whitespace-normal break-words leading-snug">{desc}</p>
         </div>
       </div>
       <button
-        onClick={() => { navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-        className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 ml-3 shrink-0 transition-colors"
+        onClick={copy}
+        className="flex items-center gap-1 text-xs font-semibold ml-3 shrink-0 transition-colors hover:opacity-80"
+        style={{ color: "#364F9F" }}
       >
         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
         {copied ? "Copied" : "Copy"}
@@ -154,17 +147,22 @@ function CouponCard({ code, desc }: { code: string; desc: string }) {
   );
 }
 
-function IncludedProductCard({ item, product }: {
+function IncludedProductCard({ item, product, comboDiscountRatio }: {
   item: { productId: string; label: string };
   product?: Product;
+  comboDiscountRatio: number;
 }) {
   const category = product?.category ?? "Fish";
   const img = product?.imageUrl || getFallbackImage(category);
 
+  const basePrice = product?.originalPrice ?? product?.price ?? null;
+  const showPricing = basePrice != null && comboDiscountRatio < 1 && comboDiscountRatio > 0;
+  const discountedPrice = showPricing ? Math.round(basePrice * comboDiscountRatio) : null;
+
   return (
     <Link href={product ? `/product/${product.id}` : "#"}>
-      <div className="flex items-center gap-3 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl p-3 hover:border-emerald-300 hover:shadow-sm transition-all group cursor-pointer">
-        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/20">
+      <div className="flex items-center gap-3 py-3 group cursor-pointer">
+        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/30">
           <img src={img} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
         <div className="flex-1 min-w-0">
@@ -177,7 +175,16 @@ function IncludedProductCard({ item, product }: {
             </span>
           </div>
           {product && (
-            <p className="text-xs text-muted-foreground ml-6 line-clamp-1">{product.category} · {product.weight ?? product.unit ?? ""}</p>
+            <p className="text-xs text-muted-foreground ml-6 line-clamp-1">
+              {product.category}
+              {product.unit ? ` · ${product.unit}` : product.weight ? ` · ${product.weight}` : ""}
+            </p>
+          )}
+          {showPricing && discountedPrice != null && (
+            <div className="flex items-center gap-2 ml-6 mt-1">
+              <span className="text-sm font-bold text-foreground">₹{discountedPrice}</span>
+              <span className="text-xs text-muted-foreground line-through">₹{basePrice}</span>
+            </div>
           )}
         </div>
         {product && (
@@ -249,7 +256,6 @@ export default function ComboDetail() {
   const { addToCart, setIsCartOpen } = useCart();
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
-  const recipeScrollRef = useRef<HTMLDivElement>(null);
   const productRecipesScrollRef = useRef<HTMLDivElement>(null);
   const combosScrollRef = useRef<HTMLDivElement>(null);
   const similarScrollRef = useRef<HTMLDivElement>(null);
@@ -268,6 +274,8 @@ export default function ComboDetail() {
 
   const { data: products = [] } = useQuery<Product[]>({ queryKey: ["/api/products"] });
   const { data: allCombos = [] } = useQuery<Combo[]>({ queryKey: ["/api/combos"] });
+  const { data: allCoupons = [] } = useCoupons();
+  const liveCoupons = (allCoupons ?? []).filter((c) => c.isActive);
 
   const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
 
@@ -284,6 +292,11 @@ export default function ComboDetail() {
     .map(({ product }) => product?.category ?? "Fish");
 
   const otherCombos = allCombos.filter((c) => c.id !== id).slice(0, 8);
+
+  // Per-item discount ratio (applied uniformly to each included product)
+  const comboDiscountRatio = combo && combo.originalPrice > 0
+    ? combo.discountedPrice / combo.originalPrice
+    : 1;
 
   // Weight parsing + combo gross/net weight calculation
   const parseWeightGrams = (str: string | null | undefined): number | null => {
@@ -498,12 +511,17 @@ export default function ComboDetail() {
 
             {/* What's Included */}
             <div>
-              <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
                 <Utensils className="w-4 h-4 text-accent" /> What's Included
               </h3>
-              <div className="space-y-2.5">
+              <div className="divide-y divide-border/30">
                 {includedProducts.map(({ item, product }, i) => (
-                  <IncludedProductCard key={i} item={item} product={product} />
+                  <IncludedProductCard
+                    key={i}
+                    item={item}
+                    product={product}
+                    comboDiscountRatio={comboDiscountRatio}
+                  />
                 ))}
               </div>
             </div>
@@ -563,62 +581,44 @@ export default function ComboDetail() {
               </Button>
             </div>
 
-            {/* Available Offers */}
-            <div className="border border-border/40 rounded-2xl overflow-hidden">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/20">
-                <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Available Offers</h3>
-              </div>
-              <div className="flex flex-col divide-y divide-border/30">
-                {COUPONS.map((c) => (
-                  <CouponCard key={c.code} code={c.code} desc={c.desc} />
-                ))}
-              </div>
-            </div>
-
-            {/* Nutrition Info */}
-            {combo.nutrition.length > 0 && (
-              <div className="border border-border/30 rounded-2xl overflow-hidden">
-                <div className="flex items-center gap-2 px-4 py-3 bg-muted/30 border-b border-border/30">
-                  <Package className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm font-bold text-foreground">Nutrition Info (per 100g serving)</span>
+            {/* Available Offers — matches single product page */}
+            {liveCoupons.length > 0 && (
+              <div className="border border-border/40 rounded-2xl overflow-hidden">
+                <div
+                  className="w-full flex items-center gap-2.5 px-4 py-3 bg-muted/20"
+                  data-testid="header-offers"
+                >
+                  <span
+                    aria-hidden
+                    className="w-5 h-5 shrink-0 inline-block"
+                    style={{
+                      backgroundColor: "#364F9F",
+                      WebkitMaskImage: `url(${giftCardIconImg})`,
+                      maskImage: `url(${giftCardIconImg})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <div className="flex-1 text-left min-w-0">
+                    <span className="text-sm font-semibold text-foreground">
+                      Offers Available
+                    </span>
+                  </div>
                 </div>
-                <div className="grid grid-cols-3 divide-x divide-border/30">
-                  {combo.nutrition.map((n, i) => (
-                    <div key={i} className="flex flex-col items-center py-3 px-2">
-                      <span className="text-base mb-0.5">{n.icon}</span>
-                      <span className="text-xs font-semibold text-foreground">{n.value}</span>
-                      <span className="text-[10px] text-muted-foreground mt-0.5">{n.label}</span>
-                    </div>
+
+                <div className="flex flex-col divide-y divide-border/20 border-t border-border/20">
+                  {liveCoupons.map((c) => (
+                    <CouponCard key={c.id} code={c.code} desc={c.description} />
                   ))}
                 </div>
               </div>
             )}
           </div>
         </div>
-
-        {/* ── Why Choose This Combo ── */}
-        <section className="mb-14">
-          <div className="flex items-center gap-2 mb-5">
-            <Flame className="w-5 h-5 text-accent" />
-            <h2 className="text-xl font-bold text-foreground">Why This Combo?</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: "🎯", title: "Perfectly Curated", desc: "Handpicked items that complement each other for a complete meal experience." },
-              { icon: "💰", title: `Save ₹${savings}`, desc: "Better value than buying each item separately. Maximum savings, premium quality." },
-              { icon: "🚚", title: "Fresh & Fast", desc: "All items sourced fresh daily and delivered to your door, cleaned and ready to cook." },
-            ].map((item) => (
-              <div key={item.title} className="flex items-start gap-4 p-4 bg-muted/20 border border-border/30 rounded-2xl">
-                <span className="text-2xl shrink-0 mt-0.5">{item.icon}</span>
-                <div>
-                  <h4 className="text-sm font-bold text-foreground mb-1">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* ── Recipes from Combo Products ── */}
         {allProductRecipes.length > 0 && (
@@ -663,43 +663,6 @@ export default function ComboDetail() {
             </div>
           </section>
         )}
-
-        {/* ── Meal Ideas ── */}
-        <section className="mb-14">
-          <div className="flex items-center gap-2 mb-5">
-            <ChefHat className="w-5 h-5 text-accent" />
-            <h2 className="text-xl font-bold text-foreground">Meal Ideas for This Combo</h2>
-          </div>
-          <div className="relative">
-            <div ref={recipeScrollRef} className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
-              {COMBO_RECIPES.map((recipe) => (
-                <div
-                  key={recipe.name}
-                  className="min-w-[240px] sm:min-w-[260px] snap-start bg-card border border-border/30 rounded-2xl overflow-hidden hover:shadow-md transition-shadow flex flex-col"
-                >
-                  <div className="w-full h-44 overflow-hidden bg-muted/20">
-                    <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
-                  </div>
-                  <div className="p-4 flex flex-col flex-1 gap-2">
-                    <h4 className="font-bold text-sm text-foreground leading-snug">{recipe.name}</h4>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 flex-1">{recipe.description}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-muted-foreground">⏱ {recipe.totalTime}</span>
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                        recipe.difficulty === "Easy"
-                          ? "bg-green-100 text-green-700"
-                          : recipe.difficulty === "Medium"
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-red-100 text-red-700"
-                      }`}>{recipe.difficulty}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <SwipeHint scrollRef={recipeScrollRef} />
-          </div>
-        </section>
 
         {/* ── More Combo Deals ── */}
         {otherCombos.length > 0 && (
