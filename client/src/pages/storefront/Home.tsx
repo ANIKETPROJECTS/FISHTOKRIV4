@@ -246,7 +246,7 @@ export default function Home() {
                     <div key={combo.id} className="w-[340px] sm:w-[400px] flex-none snap-start">
                       <div className="group relative bg-card flex flex-col h-full transition-all duration-300 cursor-pointer">
                         <Link href={`/combo/${combo.id}`}>
-                          <div className="relative aspect-square w-full bg-muted/30 overflow-hidden mb-3 border border-border/20 rounded-xl">
+                          <div className="relative aspect-[16/10] w-full bg-muted/30 overflow-hidden mb-3 border border-border/20 rounded-xl">
                             <ComboImages images={comboImages} />
                             {/* Combo Saver ribbon badge */}
                             <div className="absolute top-0 left-0 z-10">
