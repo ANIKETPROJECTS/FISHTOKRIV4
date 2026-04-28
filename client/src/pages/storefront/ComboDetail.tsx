@@ -499,7 +499,10 @@ export default function ComboDetail() {
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <Header />
+      <Header
+        onSearchSubmit={(q) => navigate(q ? `/?q=${encodeURIComponent(q)}` : "/")}
+        collapsibleMobileSearch
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
