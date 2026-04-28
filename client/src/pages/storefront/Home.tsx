@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useLocation } from "wouter";
-import { ChevronLeft, Tag } from "lucide-react";
+import { ChevronLeft, Plus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { CarouselSlide, Category, Section, Combo } from "@shared/schema";
 import fishImg from "@assets/Gemini_Generated_Image_w6wqkkw6wqkkw6wq_(1)_1772713077919.png";
@@ -226,12 +226,11 @@ export default function Home() {
           return (
             <section className="mb-7">
               <div className="flex items-center gap-2 mb-3">
-                <Tag className="w-5 h-5 text-accent" />
                 <h2 className="text-xl sm:text-2xl font-medium text-foreground uppercase tracking-wide">
                   Combos Special
                 </h2>
               </div>
-              <div className="flex overflow-x-auto gap-4 sm:gap-5 scrollbar-hide snap-x">
+              <div className="flex overflow-x-auto gap-4 sm:gap-6 scrollbar-hide snap-x">
                 {combos.map(combo => {
                   const comboImages = combo.includes
                     .map(inc => {
@@ -240,43 +239,51 @@ export default function Home() {
                     })
                     .filter(Boolean) as string[];
                   return (
-                    <div key={combo.id} className="min-w-[200px] sm:min-w-[230px] snap-start flex-none">
-                      <div className="bg-white rounded-2xl border border-border/50 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                    <div key={combo.id} className="w-[240px] sm:w-[280px] flex-none snap-start">
+                      <div className="group relative bg-card flex flex-col h-full transition-all duration-300 cursor-pointer">
                         <Link href={`/combo/${combo.id}`}>
-                          <div className="h-36 overflow-hidden rounded-t-2xl cursor-pointer">
+                          <div className="relative aspect-square w-full bg-muted/30 overflow-hidden mb-3 border border-border/20 rounded-xl">
                             <ComboImages images={comboImages} />
                           </div>
                         </Link>
-                        <div className="p-3">
+                        <div className="flex-1 flex flex-col px-1">
                           <Link href={`/combo/${combo.id}`}>
-                            <h3 className="font-semibold text-foreground text-sm leading-tight truncate cursor-pointer hover:text-primary">{combo.name}</h3>
+                            <h3 className="font-sans font-medium text-base sm:text-lg text-foreground leading-snug mb-1.5 line-clamp-2 hover:text-primary transition-colors">
+                              {combo.name}
+                            </h3>
                           </Link>
-                          <p className="text-xs text-muted-foreground mt-0.5 truncate">{combo.description}</p>
-                          <div className="flex items-center justify-between mt-2.5">
-                            <div>
-                              <span className="text-sm font-bold text-primary">₹{combo.discountedPrice}</span>
-                              <span className="text-xs text-muted-foreground line-through ml-1.5">₹{combo.originalPrice}</span>
+                          <p className="text-sm text-muted-foreground mb-2.5 font-normal line-clamp-2">
+                            {combo.description}
+                          </p>
+                          <div className="flex items-center justify-between mt-auto pt-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-lg sm:text-xl font-semibold text-foreground">₹{combo.discountedPrice}</span>
+                              <span className="text-sm text-muted-foreground line-through">₹{combo.originalPrice}</span>
                             </div>
-                            <button
-                              onClick={() => addToCart({
-                                id: -Math.abs(parseInt(combo.id.slice(-6), 16) || 9999),
-                                name: combo.name,
-                                price: combo.discountedPrice,
-                                category: "Combo",
-                                status: "available",
-                                unit: combo.weight,
-                                imageUrl: null,
-                                isArchived: false,
-                                updatedAt: new Date(),
-                                limitedStockNote: null,
-                                sectionId: null,
-                                isCombo: true,
-                              } as any)}
-                              className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center text-xl font-light hover:bg-primary/90 transition-colors shadow-md shadow-primary/20"
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                addToCart({
+                                  id: -Math.abs(parseInt(combo.id.slice(-6), 16) || 9999),
+                                  name: combo.name,
+                                  price: combo.discountedPrice,
+                                  category: "Combo",
+                                  status: "available",
+                                  unit: combo.weight,
+                                  imageUrl: null,
+                                  isArchived: false,
+                                  updatedAt: new Date(),
+                                  limitedStockNote: null,
+                                  sectionId: null,
+                                  isCombo: true,
+                                } as any);
+                              }}
+                              className="rounded-full w-9 h-9 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
+                              size="icon"
                               data-testid={`button-add-combo-${combo.id}`}
                             >
-                              +
-                            </button>
+                              <Plus className="w-5 h-5 text-white" />
+                            </Button>
                           </div>
                         </div>
                       </div>
