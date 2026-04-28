@@ -159,10 +159,16 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
   const showPricing = basePrice != null && comboDiscountRatio < 1 && comboDiscountRatio > 0;
   const discountedPrice = showPricing ? Math.round(basePrice * comboDiscountRatio) : null;
 
+  const dummy = product ? getDummyDetail(product.category) : null;
+  const piecesText = product?.pieces || dummy?.pieces;
+  const servesText = product?.serves || dummy?.serves;
+  const hasGrossOrNet = !!(product?.grossWeight || product?.netWeight);
+  const hasStats = !!(piecesText || servesText || hasGrossOrNet);
+
   return (
     <Link href={product ? `/product/${product.id}` : "#"}>
-      <div className="flex items-center gap-3 py-3 group cursor-pointer">
-        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/30">
+      <div className="flex items-start gap-3 py-3 group cursor-pointer">
+        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-muted/30 border border-border/30 mt-0.5">
           <img src={img} alt={item.label} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
         </div>
         <div className="flex-1 min-w-0">
@@ -186,9 +192,98 @@ function IncludedProductCard({ item, product, comboDiscountRatio }: {
               <span className="text-xs text-muted-foreground line-through">₹{basePrice}</span>
             </div>
           )}
+
+          {/* Pieces / Serves / Weight — same icon row as single product */}
+          {hasStats && (
+            <div className="flex items-center gap-x-2.5 sm:gap-x-3.5 mt-2 ml-6 text-black dark:text-white whitespace-nowrap overflow-x-auto scrollbar-hide">
+              {piecesText && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    style={{
+                      WebkitMaskImage: `url(${piecesIcon})`,
+                      maskImage: `url(${piecesIcon})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <span className="text-[11px] sm:text-xs font-semibold leading-tight">{piecesText}</span>
+                </div>
+              )}
+
+              {piecesText && servesText && (
+                <span aria-hidden className="block w-px h-4 bg-black/40 dark:bg-white/40 shrink-0" />
+              )}
+
+              {servesText && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    style={{
+                      WebkitMaskImage: `url(${servesIcon})`,
+                      maskImage: `url(${servesIcon})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <span className="text-[11px] sm:text-xs font-semibold leading-tight">{servesText}</span>
+                </div>
+              )}
+
+              {(piecesText || servesText) && hasGrossOrNet && (
+                <span aria-hidden className="block w-px h-4 bg-black/40 dark:bg-white/40 shrink-0" />
+              )}
+
+              {hasGrossOrNet && (
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span
+                    aria-hidden
+                    className="w-4 h-4 inline-block shrink-0 bg-black dark:bg-white"
+                    style={{
+                      WebkitMaskImage: `url(${weighScaleIcon})`,
+                      maskImage: `url(${weighScaleIcon})`,
+                      WebkitMaskRepeat: "no-repeat",
+                      maskRepeat: "no-repeat",
+                      WebkitMaskSize: "contain",
+                      maskSize: "contain",
+                      WebkitMaskPosition: "center",
+                      maskPosition: "center",
+                    }}
+                  />
+                  <div className="flex items-baseline gap-1 leading-tight text-[11px] sm:text-xs font-semibold">
+                    {product?.grossWeight && (
+                      <span>
+                        {product.grossWeight}
+                        <span className="font-normal ml-0.5">gross</span>
+                      </span>
+                    )}
+                    {product?.grossWeight && product?.netWeight && (
+                      <span className="font-normal opacity-50">/</span>
+                    )}
+                    {product?.netWeight && (
+                      <span>
+                        {product.netWeight}
+                        <span className="font-normal ml-0.5">net</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         {product && (
-          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0 mt-1" />
         )}
       </div>
     </Link>
