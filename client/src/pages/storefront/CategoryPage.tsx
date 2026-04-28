@@ -131,7 +131,7 @@ export default function CategoryPage() {
                 <div
                   className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-slate-50 flex items-center justify-center transition-all duration-200 ${
                     activeSub === "All"
-                      ? "ring-[3px] ring-primary ring-offset-2"
+                      ? "ring-[3px] ring-accent ring-offset-2"
                       : "ring-1 ring-slate-200 group-hover:ring-slate-300"
                   }`}
                 >
@@ -165,7 +165,7 @@ export default function CategoryPage() {
                     <div
                       className={`w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-slate-50 flex items-center justify-center transition-all duration-200 ${
                         isActive
-                          ? "ring-[3px] ring-primary ring-offset-2"
+                          ? "ring-[3px] ring-accent ring-offset-2"
                           : "ring-1 ring-slate-200 group-hover:ring-slate-300"
                       }`}
                     >
