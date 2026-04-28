@@ -76,24 +76,30 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="flex-1 flex flex-col px-1">
-        <h3 className="font-sans font-bold text-sm text-foreground leading-tight mb-1 line-clamp-2">
+        <h3 className="font-sans font-medium text-base sm:text-lg text-foreground leading-snug mb-1.5 line-clamp-2">
           {product.name}
         </h3>
 
-        <p className="text-xs text-muted-foreground mb-2">
+        <p className="text-sm text-muted-foreground mb-2.5 font-normal">
+          {product.grossWeight && (
+            <>
+              <span className="font-medium text-foreground/80">{product.grossWeight}</span>
+              <span>&nbsp;&nbsp;|&nbsp;&nbsp;</span>
+            </>
+          )}
           {details.pieces}&nbsp;&nbsp;|&nbsp;&nbsp;{details.serves}
         </p>
 
         <div className="flex items-center justify-between mt-auto pt-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-base font-bold text-foreground">₹{product.price}</span>
-            {strikePrice && <span className="text-xs text-muted-foreground line-through">₹{strikePrice}</span>}
-            {discountPct && <span className="text-xs font-semibold text-green-600">{discountPct}% off</span>}
+            <span className="text-lg sm:text-xl font-semibold text-foreground">₹{product.price}</span>
+            {strikePrice && <span className="text-sm text-muted-foreground line-through">₹{strikePrice}</span>}
+            {discountPct && <span className="text-sm font-semibold text-green-600">{discountPct}% off</span>}
           </div>
           <Button
             onClick={(e) => { e.stopPropagation(); addToCart(product); }}
             disabled={isUnavailable}
-            className="rounded-full w-8 h-8 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
+            className="rounded-full w-9 h-9 p-0 bg-primary hover:bg-[#F05B4E] text-white shadow-md flex items-center justify-center shrink-0 transition-colors"
             size="icon"
           >
             {isUnavailable ? <span className="text-[10px]">Out</span> : <Plus className="w-5 h-5 text-white" />}

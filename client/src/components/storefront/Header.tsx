@@ -4,7 +4,7 @@ import { useCart } from "@/context/CartContext";
 import { useCustomer } from "@/context/CustomerContext";
 import { useHub } from "@/context/HubContext";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Mic, MicOff, Search as SearchIcon, X as XIcon } from "lucide-react";
+import { Mic, MicOff } from "lucide-react";
 import { CategoryMenuDropdown } from "@/components/storefront/CategoryMenu";
 import { OtpModal } from "@/components/storefront/OtpModal";
 import { LocationPicker } from "@/components/storefront/LocationPicker";
@@ -197,7 +197,7 @@ export function Header({
               aria-label={mobileSearchOpen ? "Close search" : "Open search"}
               data-testid="button-toggle-mobile-search"
             >
-              {mobileSearchOpen ? <XIcon className="w-5 h-5" /> : <SearchIcon className="w-5 h-5" />}
+              <img src={searchImg} alt="Search" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </Button>
           )}
 
@@ -249,7 +249,6 @@ export function Header({
             <span className={`text-xs sm:text-sm font-medium max-w-[80px] truncate ${selectedSubHub ? "text-primary" : "text-foreground"}`}>
               {locationLabel}
             </span>
-            <ChevronDown className="w-3 h-3 text-muted-foreground" />
           </button>
         </div>
       </div>
