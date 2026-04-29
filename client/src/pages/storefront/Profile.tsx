@@ -1014,6 +1014,14 @@ export default function Profile() {
     },
     enabled: !!customer && activeTab === "My Orders",
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: (query) => {
+      const data = query.state.data as OrderRequest[] | undefined;
+      const hasActive = !!data?.some(o => ["pending", "confirmed", "out_for_delivery"].includes(o.status));
+      return hasActive ? 10000 : 30000;
+    },
+    refetchIntervalInBackground: false,
   });
 
   const { data: products = [] } = useQuery<Product[]>({
