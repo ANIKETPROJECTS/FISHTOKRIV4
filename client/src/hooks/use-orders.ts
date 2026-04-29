@@ -33,6 +33,8 @@ export function useCreateOrder() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.orders.list.path] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/me/orders"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/customer/me"] });
       queryClient.invalidateQueries({ queryKey: ["/api/coupons/user-usage"] });
     },
   });
