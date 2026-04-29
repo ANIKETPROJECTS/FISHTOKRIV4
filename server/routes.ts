@@ -491,6 +491,7 @@ export async function registerRoutes(
         subHubName: resolvedSubHubName,
         source: "storefront",
         inventoryDeducted: !!input.hubDbName,
+        paymentMethod: input.paymentMethod ?? null,
       };
 
       const order = await storage.createOrderRequest(orderInput);

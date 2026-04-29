@@ -328,10 +328,11 @@ export class MongoStorage implements IStorage {
         discountValue: c.discountValue,
         minOrderAmount: c.minOrderAmount ?? 0,
       })),
-      paymentStatus: "unpaid",
-      payments: [],
+      paymentStatus: "unpaid" as string,
+      payments: [] as any[],
       paidAmount: 0,
       dueAmount: total,
+      paymentMethod: (order as any).paymentMethod ?? null,
       scheduleType,
       deliveryDate: order.deliveryDate ?? null,
       timeslotId: toObjectId(order.timeslotId),
@@ -347,6 +348,24 @@ export class MongoStorage implements IStorage {
     // so non-instant orders (storefront slot or admin-created) share the same shape.
     if (isInstant) {
       orderedDoc.instantDeliveryCharge = order.instantDeliveryCharge ?? 0;
+    }
+
+    // If the customer chose an online payment method (e.g. UPI), seed the order
+    // as already paid so the active order shows the payment immediately.
+    const rawPaymentMethod = String((order as any).paymentMethod ?? "").toLowerCase();
+    const isPrepaid =
+      rawPaymentMethod && !["", "cod", "cash", "cash_on_delivery"].includes(rawPaymentMethod);
+    if (isPrepaid && total > 0) {
+      orderedDoc.paymentStatus = "paid";
+      orderedDoc.paidAmount = total;
+      orderedDoc.dueAmount = 0;
+      orderedDoc.payments = [{
+        mode: rawPaymentMethod,
+        amount: total,
+        reference: "",
+        status: "completed",
+        paidAt: now,
+      }];
     }
 
     const result = await Model.collection.insertOne(orderedDoc as any);

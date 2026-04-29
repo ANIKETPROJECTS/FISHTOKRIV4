@@ -219,6 +219,7 @@ export type InsertOrderRequest = {
   superHubId?: string | null;
   subHubId?: string | null;
   subHubName?: string | null;
+  paymentMethod?: string | null;
 };
 
 export type InventoryBatch = {
@@ -310,6 +311,7 @@ export const insertOrderRequestSchema = z.object({
   instantDeliveryCharge: z.number().nullable().optional(),
   couponCode: z.string().nullable().optional(),
   discountAmount: z.number().nullable().optional(),
+  paymentMethod: z.string().nullable().optional(),
 });
 
 export const insertUserSchema = z.object({

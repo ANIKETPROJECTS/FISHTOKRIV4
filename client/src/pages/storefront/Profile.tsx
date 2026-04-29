@@ -379,6 +379,53 @@ function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () 
   );
 }
 
+function PaymentBadge({ order, total }: { order: OrderRequest; total: number }) {
+  const payments = Array.isArray(order.payments) ? order.payments : [];
+  const paidAmount = order.paidAmount ?? payments.reduce((s, p) => s + (p?.amount ?? 0), 0);
+  const status = (order.paymentStatus ?? (paidAmount >= total && total > 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid")).toLowerCase();
+  const firstMode = (payments[0]?.mode ?? (order as any).paymentMethod ?? "").toString().toLowerCase();
+
+  const modeLabel = (m: string) => {
+    if (!m) return "Online";
+    const map: Record<string, string> = { cash: "Cash", cod: "Cash on Delivery", upi: "UPI", card: "Card", online: "Online", netbanking: "Net Banking", wallet: "Wallet" };
+    return map[m] ?? m.charAt(0).toUpperCase() + m.slice(1);
+  };
+
+  if (status === "paid" && paidAmount > 0) {
+    const ts = payments[0]?.paidAt ? new Date(payments[0].paidAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : null;
+    return (
+      <div className="px-4 pb-3" data-testid={`badge-paid-${order.id}`}>
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-green-50 border border-green-200">
+          <div className="flex items-center gap-2 min-w-0">
+            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-green-700">Paid via {modeLabel(firstMode)}</p>
+              {ts && <p className="text-[10px] text-green-700/70">{ts}</p>}
+            </div>
+          </div>
+          <span className="text-sm font-bold text-green-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (status === "partial" && paidAmount > 0) {
+    return (
+      <div className="px-4 pb-3" data-testid={`badge-partial-${order.id}`}>
+        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="flex items-center gap-2 min-w-0">
+            <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+            <p className="text-xs font-semibold text-amber-700">Partially Paid · {modeLabel(firstMode)}</p>
+          </div>
+          <span className="text-sm font-bold text-amber-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
 function PaymentSummary({ order, total }: { order: OrderRequest; total: number }) {
   const payments = Array.isArray(order.payments) ? order.payments : [];
   const paidAmount = order.paidAmount ?? payments.reduce((s, p) => s + (p?.amount ?? 0), 0);
@@ -503,6 +550,9 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
         <img src={headerLocationImg} alt="" className="w-3.5 h-3.5 object-contain mt-0.5 shrink-0" />
         <p className="text-xs text-muted-foreground leading-relaxed">{order.address}, {order.deliveryArea}</p>
       </div>
+
+      <PaymentBadge order={order} total={total} />
+
 
       {!isCancelled && (
         <div className="px-4 pb-4">

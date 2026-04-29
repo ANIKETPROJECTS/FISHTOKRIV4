@@ -537,6 +537,7 @@ export function CartDrawer() {
         instantDeliveryCharge: selectedTimeslot.isInstant ? selectedTimeslot.extraCharge : null,
         couponCode: appliedCoupon?.code ?? null,
         discountAmount: discountAmount > 0 ? discountAmount : null,
+        paymentMethod: paymentMethod === "online" ? "upi" : "cod",
       },
       { onSuccess: () => { setIsSuccess(true); clearCart(); } }
     );
