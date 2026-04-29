@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { UserModel } from "./adminDb";
 import { getOrderModel } from "./ordersDb";
 import { CustomerDbModel } from "./customerDb";
@@ -283,6 +284,9 @@ export class MongoStorage implements IStorage {
       return null;
     };
 
+    const trimmedNotes =
+      typeof order.notes === "string" ? order.notes.trim() || null : (order.notes ?? null);
+
     const orderedDoc: Record<string, any> = {
       customerId: toObjectId(order.customerId),
       customerName: order.customerName,
@@ -298,7 +302,7 @@ export class MongoStorage implements IStorage {
       deliveryArea: order.deliveryArea,
       deliveryAddressDetail: detail,
       pickupLocation: "",
-      notes: order.notes ?? null,
+      notes: trimmedNotes,
       status: "pending",
       source: order.source ?? "storefront",
       subHubId: toObjectId(order.subHubId),
@@ -328,12 +332,17 @@ export class MongoStorage implements IStorage {
       timeslotLabel: order.timeslotLabel ?? null,
       timeslotStart: order.timeslotStart ?? null,
       timeslotEnd: order.timeslotEnd ?? null,
-      instantDeliveryCharge: isInstant ? (order.instantDeliveryCharge ?? null) : null,
       createdAt: now,
       updatedAt: now,
       inventoryDeducted: !!order.inventoryDeducted,
       __v: 0,
     };
+
+    // Only include instantDeliveryCharge when the order is actually instant delivery,
+    // so non-instant orders (storefront slot or admin-created) share the same shape.
+    if (isInstant) {
+      orderedDoc.instantDeliveryCharge = order.instantDeliveryCharge ?? 0;
+    }
 
     const result = await Model.collection.insertOne(orderedDoc as any);
     const doc = await Model.findById(result.insertedId).lean();
