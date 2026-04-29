@@ -108,12 +108,28 @@ type OrdersSubTab = "current" | "previous";
 
 const ORDERS_PER_PAGE = 5;
 
-function getOrderTotal(order: OrderRequest) {
+function getOrderTotals(order: OrderRequest) {
   const items: OrderItem[] = Array.isArray(order.items) ? order.items as OrderItem[] : [];
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const deliveryFee = subtotal >= 500 ? 0 : 49;
-  const discount = (order as any).coupon?.discountAmount ?? 0;
-  return subtotal + deliveryFee - discount;
+  const computedSubtotal = items.reduce((sum, i) => sum + (i.price ?? 0) * i.quantity, 0);
+  const subtotal = typeof (order as any).subtotal === "number" && (order as any).subtotal > 0
+    ? (order as any).subtotal
+    : computedSubtotal;
+  const discount = typeof (order as any).discount === "number"
+    ? (order as any).discount
+    : ((order as any).coupon?.discountAmount ?? 0);
+  const slotCharge = typeof (order as any).slotCharge === "number"
+    ? (order as any).slotCharge
+    : ((order as any).instantDeliveryCharge ?? 0);
+  const deliveryFee = slotCharge > 0 ? slotCharge : (subtotal >= 500 ? 0 : 49);
+  const total = typeof (order as any).total === "number" && (order as any).total > 0
+    ? (order as any).total
+    : Math.max(0, subtotal - discount + deliveryFee);
+  const couponCode = (order as any).couponCode ?? (order as any).coupon?.code ?? null;
+  return { subtotal, discount, deliveryFee, slotCharge, total, couponCode };
+}
+
+function getOrderTotal(order: OrderRequest) {
+  return getOrderTotals(order).total;
 }
 
 const TRACK_STEPS = [
@@ -237,10 +253,7 @@ function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () 
 function OrderCard({ order, productImageMap }: { order: OrderRequest; productImageMap: Record<string, string> }) {
   const [expanded, setExpanded] = useState(false);
   const items: OrderItem[] = Array.isArray(order.items) ? order.items as OrderItem[] : [];
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const deliveryFee = subtotal >= 500 ? 0 : 49;
-  const discount = (order as any).coupon?.discountAmount ?? 0;
-  const total = subtotal + deliveryFee - discount;
+  const { subtotal, discount, deliveryFee, total, couponCode } = getOrderTotals(order);
   const status = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
   const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-IN", {
     day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit"
@@ -403,7 +416,7 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
-                  <span>Coupon Discount ({(order as any).coupon?.code})</span>
+                  <span>Coupon Discount{couponCode ? ` (${couponCode})` : ""}</span>
                   <span>-₹{discount.toLocaleString()}</span>
                 </div>
               )}
