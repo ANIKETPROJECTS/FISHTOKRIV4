@@ -115,8 +115,9 @@ export type OrderItem = {
 };
 
 export type OrderPayment = {
-  method: string;
+  mode: string | null;
   amount: number;
+  reference: string;
   status: string;
   paidAt: Date | null;
 };

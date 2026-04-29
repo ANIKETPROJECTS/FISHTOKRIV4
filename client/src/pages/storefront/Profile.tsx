@@ -379,6 +379,75 @@ function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () 
   );
 }
 
+function PaymentSummary({ order, total }: { order: OrderRequest; total: number }) {
+  const payments = Array.isArray(order.payments) ? order.payments : [];
+  const paidAmount = order.paidAmount ?? payments.reduce((s, p) => s + (p?.amount ?? 0), 0);
+  const dueAmount = order.dueAmount ?? Math.max(0, total - paidAmount);
+  const status = (order.paymentStatus ?? (paidAmount >= total && total > 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid")).toLowerCase();
+
+  if (payments.length === 0 && status === "unpaid") return null;
+
+  const statusBadge: Record<string, { label: string; cls: string }> = {
+    paid:    { label: "Paid",            cls: "bg-green-100 text-green-700 border-green-200" },
+    partial: { label: "Partially Paid",  cls: "bg-amber-100 text-amber-700 border-amber-200" },
+    unpaid:  { label: "Unpaid",          cls: "bg-red-100 text-red-700 border-red-200" },
+    refunded:{ label: "Refunded",        cls: "bg-slate-100 text-slate-700 border-slate-200" },
+  };
+  const badge = statusBadge[status] ?? { label: status, cls: "bg-slate-100 text-slate-700 border-slate-200" };
+
+  const modeLabel = (m: string | null) => {
+    if (!m) return "Payment";
+    const map: Record<string, string> = { cash: "Cash", cod: "Cash on Delivery", upi: "UPI", card: "Card", online: "Online", netbanking: "Net Banking", wallet: "Wallet" };
+    return map[m.toLowerCase()] ?? m.charAt(0).toUpperCase() + m.slice(1);
+  };
+
+  return (
+    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3 space-y-2" data-testid={`section-payment-${order.id}`}>
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] font-bold text-foreground uppercase tracking-widest">Payment</p>
+        <span className={`px-2 py-0.5 rounded-full border text-[10px] font-semibold ${badge.cls}`} data-testid={`badge-payment-status-${order.id}`}>
+          {badge.label}
+        </span>
+      </div>
+
+      {payments.length > 0 && (
+        <div className="space-y-1.5">
+          {payments.map((p, i) => {
+            const date = p?.paidAt
+              ? new Date(p.paidAt).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+              : null;
+            return (
+              <div key={i} className="flex items-start justify-between gap-2 text-xs" data-testid={`row-payment-${order.id}-${i}`}>
+                <div className="min-w-0">
+                  <p className="font-semibold text-foreground">{modeLabel(p?.mode ?? null)}</p>
+                  {date && <p className="text-[11px] text-muted-foreground">{date}</p>}
+                  {p?.reference && (
+                    <p className="text-[11px] text-muted-foreground truncate">Ref: {p.reference}</p>
+                  )}
+                </div>
+                <span className="text-sm font-semibold text-foreground shrink-0">₹{(p?.amount ?? 0).toLocaleString()}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="pt-2 border-t border-slate-200 space-y-0.5 text-xs">
+        <div className="flex justify-between text-muted-foreground">
+          <span>Total Paid</span>
+          <span className="font-semibold text-foreground">₹{paidAmount.toLocaleString()}</span>
+        </div>
+        {dueAmount > 0 && (
+          <div className="flex justify-between text-red-600 font-semibold">
+            <span>Amount Due</span>
+            <span>₹{dueAmount.toLocaleString()}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function OrderCard({ order, productImageMap }: { order: OrderRequest; productImageMap: Record<string, string> }) {
   const [expanded, setExpanded] = useState(false);
   const items: OrderItem[] = Array.isArray(order.items) ? order.items as OrderItem[] : [];
@@ -564,9 +633,11 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
                 <span>GST (5%)</span><span>Included</span>
               </div>
               <div className="flex justify-between text-sm font-bold text-foreground pt-2 border-t border-slate-200">
-                <span>Total Paid</span><span>₹{total.toLocaleString()}</span>
+                <span>Grand Total</span><span>₹{total.toLocaleString()}</span>
               </div>
             </div>
+
+            <PaymentSummary order={order} total={total} />
 
             {order.notes && (
               <div className="rounded-lg p-2.5" style={{ backgroundColor: "#364F9F" }}>

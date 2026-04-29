@@ -45,9 +45,10 @@ const orderCouponSummarySchema = new mongoose.Schema(
 
 const orderPaymentSchema = new mongoose.Schema(
   {
-    method: { type: String, default: null },
+    mode: { type: String, default: null },
     amount: { type: Number, default: 0 },
-    status: { type: String, default: "pending" },
+    reference: { type: String, default: "" },
+    status: { type: String, default: "completed" },
     paidAt: { type: Date, default: null },
   },
   { _id: false }
