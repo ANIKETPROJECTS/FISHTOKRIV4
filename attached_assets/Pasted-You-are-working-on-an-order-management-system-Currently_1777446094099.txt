@@ -1,0 +1,151 @@
+You are working on an order management system.
+
+Currently in the database, there are **two orders**:
+
+1. Order created from **digital menu (storefront)** → customer: Aniket Rane
+2. Order created from **admin panel** → customer: Sairaj Koyande
+
+Your task is to analyze and fix inconsistencies in how orders are created so that both flows generate **fully consistent and complete order documents**.
+
+---
+
+## 🔍 Problem Summary
+
+The **digital menu (storefront) order is missing multiple important relational and reference fields**, while the admin-created order is complete.
+
+You must fix the storefront order creation logic to match the admin panel structure.
+
+---
+
+## ❌ Missing / Incorrect Fields in Storefront Order (Aniket)
+
+Ensure the following fields are properly populated:
+
+### 1. Customer Reference
+
+* `customerId` is currently `null`
+* Fix: attach valid `customerId` if user exists or is authenticated
+
+---
+
+### 2. Hub References
+
+* `subHubId` is `null`
+* `superHubId` is `null`
+* Fix: assign correct hub IDs based on delivery location or system config
+
+---
+
+### 3. Coupon Reference
+
+* `couponId` is `null`
+* In `coupons[]`, `id` is also `null`
+* Fix:
+
+  * Store actual `couponId`
+  * Ensure `coupons[].id` matches it
+
+---
+
+### 4. Timeslot Reference
+
+* `timeslotId` is `null`
+* Only label, start, end are stored
+* Fix:
+
+  * Store proper `timeslotId`
+  * Ensure it maps to timeslot collection
+
+---
+
+### 5. Schema Inconsistency
+
+* `instantDeliveryCharge` exists but is `null` in storefront order
+* Not present in admin order
+* Fix:
+
+  * Either remove field entirely OR standardize it across all orders
+
+---
+
+## ⚠️ Inconsistent Data Handling
+
+### Address Formatting
+
+* Storefront uses long comma-separated string
+* Admin uses structured + formatted string
+
+Fix:
+
+* Standardize address format OR always rely on `deliveryAddressDetail`
+
+---
+
+### Coupons Structure
+
+* Storefront:
+
+  * `couponId: null`
+  * `coupons[].id: null`
+* Admin:
+
+  * Proper IDs present
+
+Fix:
+
+* Ensure both `couponId` and `coupons[].id` are always populated
+
+---
+
+### Notes Field
+
+* No validation/standardization
+* Fix:
+
+  * Apply trimming / validation if needed
+
+---
+
+## ✅ Expected Outcome
+
+After fix, BOTH order sources (storefront + admin) must:
+
+* Have all relational IDs populated:
+
+  * `customerId`
+  * `couponId`
+  * `timeslotId`
+  * `subHubId`
+  * `superHubId`
+
+* Maintain consistent schema:
+
+  * Same fields present
+  * No unnecessary `null` fields
+  * Proper references instead of only labels
+
+* Ensure:
+
+  * Coupons are fully linked
+  * Timeslots are properly referenced
+  * Customer linkage is correct
+
+---
+
+## 🛠️ Implementation Notes
+
+* Update storefront order creation logic (API/controller/service)
+* Fetch and attach:
+
+  * Customer from auth/session
+  * Coupon from DB using code
+  * Timeslot from DB
+  * Hub mapping logic
+* Add validation before saving order
+* Optionally add schema validation to reject incomplete orders
+
+---
+
+## 🎯 Goal
+
+Make order documents from both flows **identical in structure, complete in references, and production-ready for scaling**.
