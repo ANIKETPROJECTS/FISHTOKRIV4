@@ -379,45 +379,118 @@ function TrackOrderModal({ order, onClose }: { order: OrderRequest; onClose: () 
   );
 }
 
+const PAYMENT_MODE_LABELS: Record<string, string> = {
+  cash: "Cash",
+  cod: "Cash on Delivery",
+  upi: "UPI",
+  card: "Card",
+  online: "Online",
+  netbanking: "Net Banking",
+  wallet: "Wallet",
+};
+
+function modeLabel(m: string | null | undefined): string {
+  const k = (m ?? "").toString().toLowerCase();
+  if (!k) return "Online";
+  return PAYMENT_MODE_LABELS[k] ?? k.charAt(0).toUpperCase() + k.slice(1);
+}
+
+function summarizePaidPayments(order: OrderRequest, fallbackMode: string): {
+  modesText: string;
+  isMulti: boolean;
+  byMode: { mode: string; amount: number }[];
+} {
+  const payments = (Array.isArray(order.payments) ? order.payments : []).filter(p => (p?.amount ?? 0) > 0);
+  if (payments.length === 0) {
+    return { modesText: modeLabel(fallbackMode), isMulti: false, byMode: [] };
+  }
+  const totals = new Map<string, number>();
+  for (const p of payments) {
+    const k = (p?.mode ?? "").toString().toLowerCase() || "other";
+    totals.set(k, (totals.get(k) ?? 0) + (p?.amount ?? 0));
+  }
+  const byMode = Array.from(totals.entries())
+    .map(([mode, amount]) => ({ mode, amount }))
+    .sort((a, b) => b.amount - a.amount);
+  const modesText = byMode.map(b => modeLabel(b.mode)).join(" + ");
+  return { modesText, isMulti: byMode.length > 1, byMode };
+}
+
 function PaymentBadge({ order, total }: { order: OrderRequest; total: number }) {
   const payments = Array.isArray(order.payments) ? order.payments : [];
   const paidAmount = order.paidAmount ?? payments.reduce((s, p) => s + (p?.amount ?? 0), 0);
   const status = (order.paymentStatus ?? (paidAmount >= total && total > 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid")).toLowerCase();
-  const firstMode = (payments[0]?.mode ?? (order as any).paymentMethod ?? "").toString().toLowerCase();
-
-  const modeLabel = (m: string) => {
-    if (!m) return "Online";
-    const map: Record<string, string> = { cash: "Cash", cod: "Cash on Delivery", upi: "UPI", card: "Card", online: "Online", netbanking: "Net Banking", wallet: "Wallet" };
-    return map[m] ?? m.charAt(0).toUpperCase() + m.slice(1);
-  };
+  const fallbackMode = ((order as any).paymentMethod ?? "").toString().toLowerCase();
+  const { modesText, isMulti, byMode } = summarizePaidPayments(order, fallbackMode);
 
   if (status === "paid" && paidAmount > 0) {
-    const ts = payments[0]?.paidAt ? new Date(payments[0].paidAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }) : null;
+    const ts = payments[0]?.paidAt
+      ? new Date(payments[0].paidAt).toLocaleString("en-IN", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })
+      : null;
     return (
       <div className="px-4 pb-3" data-testid={`badge-paid-${order.id}`}>
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-green-50 border border-green-200">
-          <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-green-700">Paid via {modeLabel(firstMode)}</p>
-              {ts && <p className="text-[10px] text-green-700/70">{ts}</p>}
+        <div className="flex flex-col gap-1.5 px-3 py-2 rounded-xl bg-green-50 border border-green-200">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-green-700 truncate">
+                  {isMulti ? `Paid via ${byMode.length} methods` : `Paid via ${modesText}`}
+                </p>
+                {!isMulti && ts && <p className="text-[10px] text-green-700/70">{ts}</p>}
+                {isMulti && <p className="text-[10px] text-green-700/70 truncate">{modesText}</p>}
+              </div>
             </div>
+            <span className="text-sm font-bold text-green-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
           </div>
-          <span className="text-sm font-bold text-green-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
+          {isMulti && (
+            <div className="flex flex-wrap gap-1 pl-6">
+              {byMode.map((b, i) => (
+                <span
+                  key={i}
+                  className="px-2 py-0.5 rounded-full bg-white border border-green-200 text-[10px] font-semibold text-green-700"
+                  data-testid={`chip-paid-mode-${order.id}-${b.mode}`}
+                >
+                  {modeLabel(b.mode)} ₹{b.amount.toLocaleString()}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   if (status === "partial" && paidAmount > 0) {
+    const dueAmount = order.dueAmount ?? Math.max(0, total - paidAmount);
     return (
       <div className="px-4 pb-3" data-testid={`badge-partial-${order.id}`}>
-        <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
-          <div className="flex items-center gap-2 min-w-0">
-            <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
-            <p className="text-xs font-semibold text-amber-700">Partially Paid · {modeLabel(firstMode)}</p>
+        <div className="flex flex-col gap-1.5 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-amber-700 truncate">
+                  Partially Paid {isMulti ? `· ${byMode.length} methods` : `· ${modesText}`}
+                </p>
+                <p className="text-[10px] text-amber-700/70">Due ₹{dueAmount.toLocaleString()}</p>
+              </div>
+            </div>
+            <span className="text-sm font-bold text-amber-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
           </div>
-          <span className="text-sm font-bold text-amber-700 shrink-0">₹{paidAmount.toLocaleString()}</span>
+          {isMulti && (
+            <div className="flex flex-wrap gap-1 pl-6">
+              {byMode.map((b, i) => (
+                <span
+                  key={i}
+                  className="px-2 py-0.5 rounded-full bg-white border border-amber-200 text-[10px] font-semibold text-amber-700"
+                  data-testid={`chip-partial-mode-${order.id}-${b.mode}`}
+                >
+                  {modeLabel(b.mode)} ₹{b.amount.toLocaleString()}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -481,7 +554,7 @@ function PaymentSummary({ order, total }: { order: OrderRequest; total: number }
 
       <div className="pt-2 border-t border-slate-200 space-y-0.5 text-xs">
         <div className="flex justify-between text-muted-foreground">
-          <span>Total Paid</span>
+          <span>Total Paid{payments.length > 1 ? ` (${payments.length} methods)` : ""}</span>
           <span className="font-semibold text-foreground">₹{paidAmount.toLocaleString()}</span>
         </div>
         {dueAmount > 0 && (
