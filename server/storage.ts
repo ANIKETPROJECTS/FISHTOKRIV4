@@ -335,7 +335,6 @@ export class MongoStorage implements IStorage {
       createdAt: now,
       updatedAt: now,
       inventoryDeducted: !!order.inventoryDeducted,
-      __v: 0,
     };
 
     // Only include instantDeliveryCharge when the order is actually instant delivery,

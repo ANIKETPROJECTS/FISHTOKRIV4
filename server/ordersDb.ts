@@ -54,7 +54,7 @@ const orderPaymentSchema = new mongoose.Schema(
 );
 
 const orderSchema = new mongoose.Schema({
-  customerId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer", default: null },
   customerName: { type: String, required: true },
   phone: { type: String, required: true },
   email: { type: String, default: null },
@@ -95,6 +95,35 @@ const orderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
   inventoryDeducted: { type: Boolean, default: false },
+}, {
+  versionKey: false,
+  toJSON: {
+    virtuals: false,
+    transform: (_doc, ret: any) => {
+      if (ret._id) ret._id = ret._id.toString();
+      const idFields = [
+        "customerId",
+        "subHubId",
+        "superHubId",
+        "couponId",
+        "timeslotId",
+      ];
+      for (const k of idFields) {
+        if (ret[k]) ret[k] = ret[k].toString();
+      }
+      if (Array.isArray(ret.couponIds)) {
+        ret.couponIds = ret.couponIds.map((id: any) => (id ? id.toString() : null));
+      }
+      if (Array.isArray(ret.coupons)) {
+        ret.coupons = ret.coupons.map((c: any) => ({
+          ...c,
+          id: c?.id ? c.id.toString() : null,
+        }));
+      }
+      delete ret.__v;
+      return ret;
+    },
+  },
 });
 
 export async function connectOrdersDb() {
