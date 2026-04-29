@@ -1,0 +1,210 @@
+You are working on an order management system.
+
+Current status:
+
+* Two orders exist in the database:
+
+  1. Storefront (digital menu) order → Aniket Rane
+  2. Admin panel order → Sairaj Koyande
+
+All major issues (customerId, couponId, timeslotId, hub IDs) are already fixed.
+
+Your task is to resolve the **remaining inconsistencies and standardize the data format across all orders**.
+
+---
+
+## 🔴 PRIMARY ISSUE: ObjectId Format Inconsistency
+
+Currently:
+
+### Storefront order uses Mongo Extended JSON:
+
+```json
+{ "$oid": "69cca326ac797a8245b9c71e" }
+```
+
+### Admin order uses plain string:
+
+```json
+"69cca326ac797a8245b9c71e"
+```
+
+---
+
+## ❌ Problem
+
+Mixed formats across orders can cause:
+
+* Query mismatches
+* Failed comparisons
+* Frontend parsing inconsistencies
+* Bugs in filtering, aggregation, and joins
+
+---
+
+## ✅ REQUIRED FIX
+
+### Standardize ALL ID fields across the system
+
+Apply this to:
+
+* `customerId`
+* `subHubId`
+* `superHubId`
+* `couponId`
+* `couponIds[]`
+* `coupons[].id`
+* `timeslotId`
+
+---
+
+## 🎯 Target Behavior
+
+### In DATABASE (MongoDB):
+
+* Store all IDs as proper **ObjectId type**
+
+### In API RESPONSE:
+
+* Convert all ObjectIds to **string format**
+
+Example:
+
+```json
+"customerId": "69cca326ac797a8245b9c71e"
+```
+
+---
+
+## 🛠️ Implementation Instructions
+
+### 1. Schema Fix (Mongoose)
+
+Ensure schema uses ObjectId:
+
+```js
+customerId: { type: mongoose.Schema.Types.ObjectId, ref: "Customer" }
+```
+
+Apply similarly to:
+
+* subHubId
+* superHubId
+* couponId
+* couponIds[]
+* coupons[].id
+* timeslotId
+
+---
+
+### 2. Input Handling (Controller/Service)
+
+When receiving data:
+
+* Convert string IDs to ObjectId before saving
+
+Example:
+
+```js
+new mongoose.Types.ObjectId(id)
+```
+
+---
+
+### 3. Output Formatting (VERY IMPORTANT)
+
+Before sending response:
+
+* Convert all ObjectIds to string
+
+Option A (recommended):
+Use `.toJSON()` transform in schema:
+
+```js
+schema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret._id = ret._id.toString();
+
+    if (ret.customerId) ret.customerId = ret.customerId.toString();
+    if (ret.subHubId) ret.subHubId = ret.subHubId.toString();
+    if (ret.superHubId) ret.superHubId = ret.superHubId.toString();
+    if (ret.couponId) ret.couponId = ret.couponId.toString();
+    if (ret.timeslotId) ret.timeslotId = ret.timeslotId.toString();
+
+    if (ret.couponIds) {
+      ret.couponIds = ret.couponIds.map(id => id.toString());
+    }
+
+    if (ret.coupons) {
+      ret.coupons = ret.coupons.map(c => ({
+        ...c,
+        id: c.id ? c.id.toString() : null
+      }));
+    }
+
+    return ret;
+  }
+});
+```
+
+---
+
+### 4. Migration (IMPORTANT)
+
+Existing orders in DB may have mixed formats.
+
+Write a script to:
+
+* Convert all string IDs → ObjectId
+* Convert `{ "$oid": ... }` → ObjectId if stored incorrectly
+
+---
+
+## 🟡 SECONDARY CLEANUP (Optional but Recommended)
+
+### 1. Remove `__v` from API response
+
+```js
+versionKey: false
+```
+
+---
+
+### 2. Address Standardization
+
+* Either:
+
+  * Standardize `address` format
+  * OR rely only on `deliveryAddressDetail`
+
+---
+
+### 3. Notes Field
+
+* Trim and sanitize input
+
+---
+
+## 🎯 FINAL GOAL
+
+After implementation:
+
+* All orders (storefront + admin) must:
+
+  * Use ObjectId internally
+  * Return clean string IDs in API
+  * Have identical structure and data format
+  * Be consistent across all flows
+
+---
+
+## ✅ SUCCESS CRITERIA
+
+* No `{ "$oid": ... }` in API responses
+* No mixed ID formats
+* All relational fields behave consistently
+* Queries and filters work reliably
+
+---
+
+Make the system fully consistent and production-ready.
