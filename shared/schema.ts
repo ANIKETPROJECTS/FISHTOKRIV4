@@ -280,15 +280,16 @@ export const insertCategorySchema = z.object({
 
 export type CustomerAddress = {
   id: string;
+  label: string;
+  type: "house" | "office" | "other";
   name: string;
   phone: string;
   building: string;
   street: string;
   area: string;
   pincode: string;
-  type: "house" | "office" | "other";
-  label: string;
   instructions: string;
+  isDefault: boolean;
 };
 
 export type EmbeddedOrder = {
@@ -331,15 +332,16 @@ export type UpdateCustomer = {
 };
 
 export const insertCustomerAddressSchema = z.object({
+  label: z.string().optional().default("Home"),
+  type: z.enum(["house", "office", "other"]).optional().default("house"),
   name: z.string().optional().default(""),
   phone: z.string().optional().default(""),
   building: z.string().optional().default(""),
   street: z.string().optional().default(""),
   area: z.string().min(1, "Area is required"),
   pincode: z.string().optional().default(""),
-  type: z.enum(["house", "office", "other"]).optional().default("house"),
-  label: z.string().optional().default("Home"),
   instructions: z.string().optional().default(""),
+  isDefault: z.boolean().optional().default(false),
 });
 
 export const updateCustomerSchema = z.object({

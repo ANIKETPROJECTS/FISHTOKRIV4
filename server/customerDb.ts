@@ -33,15 +33,16 @@ const usedCouponEntrySchema = new mongoose.Schema(
 
 const customerAddressSchema = new mongoose.Schema(
   {
+    label: { type: String, default: "Home" },
+    type: { type: String, default: "house" },
     name: { type: String, default: "" },
     phone: { type: String, default: "" },
     building: { type: String, default: "" },
     street: { type: String, default: "" },
     area: { type: String, required: true },
     pincode: { type: String, default: "" },
-    type: { type: String, default: "house" },
-    label: { type: String, default: "Home" },
     instructions: { type: String, default: "" },
+    isDefault: { type: Boolean, default: false },
   },
   { _id: true }
 );
@@ -76,9 +77,9 @@ const embeddedOrderSchema = new mongoose.Schema(
 );
 
 const customerSchema = new mongoose.Schema({
-  phone: { type: String, required: true, unique: true },
   name: { type: String, default: null },
   email: { type: String, default: null },
+  phone: { type: String, required: true, unique: true },
   dateOfBirth: { type: String, default: null },
   addresses: { type: [customerAddressSchema], default: [] },
   orders: { type: [embeddedOrderSchema], default: [] },

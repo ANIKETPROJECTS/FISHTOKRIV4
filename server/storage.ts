@@ -28,17 +28,18 @@ function toCustomer(doc: any): Customer {
     name: doc.name ?? null,
     email: doc.email ?? null,
     dateOfBirth: doc.dateOfBirth ?? null,
-    addresses: (doc.addresses ?? []).map((a: any) => ({
-      id: a._id.toString(),
-      name: a.name ?? "",
-      phone: a.phone ?? "",
-      building: a.building ?? "",
-      street: a.street ?? "",
-      area: a.area ?? "",
-      pincode: a.pincode ?? "",
-      type: a.type ?? "house",
-      label: a.label ?? "Home",
-      instructions: a.instructions ?? "",
+    addresses: (doc.addresses ?? []).map((a: any, i: number) => ({
+      id: a?._id ? a._id.toString() : `idx-${i}`,
+      label: a?.label ?? "Home",
+      type: (a?.type ?? "house") as "house" | "office" | "other",
+      name: a?.name ?? "",
+      phone: a?.phone ?? "",
+      building: a?.building ?? "",
+      street: a?.street ?? "",
+      area: a?.area ?? "",
+      pincode: a?.pincode ?? "",
+      instructions: a?.instructions ?? "",
+      isDefault: !!a?.isDefault,
     })),
     orders: (doc.orders ?? []).map((o: any) => ({
       orderId: o.orderId,
@@ -169,18 +170,37 @@ export class MongoStorage implements IStorage {
   }
 
   async createCustomer(data: InsertCustomer): Promise<Customer> {
-    const doc = await CustomerDbModel.create({ ...data, addresses: [], orders: [], createdAt: new Date(), updatedAt: new Date() });
+    const now = new Date();
+    const doc = await CustomerDbModel.create({
+      name: data.name ?? null,
+      email: data.email ?? null,
+      phone: data.phone,
+      dateOfBirth: data.dateOfBirth ?? null,
+      addresses: [],
+      orders: [],
+      usedCoupons: [],
+      createdAt: now,
+      updatedAt: now,
+    });
     return toCustomer(doc);
   }
 
   async upsertCustomer(phone: string, data: Partial<InsertCustomer>): Promise<Customer> {
-    const { phone: _ignored, ...rest } = data as any;
-    const doc = await CustomerDbModel.findOneAndUpdate(
-      { phone },
-      { $set: { ...rest, updatedAt: new Date() }, $setOnInsert: { createdAt: new Date(), addresses: [], orders: [] } },
-      { new: true, upsert: true }
-    ).lean();
-    return toCustomer(doc);
+    const existing = await CustomerDbModel.findOne({ phone }).lean();
+    if (existing) {
+      const { phone: _ignored, ...rest } = data as any;
+      const setFields: Record<string, any> = { updatedAt: new Date() };
+      for (const [k, v] of Object.entries(rest)) {
+        if (v !== undefined) setFields[k] = v;
+      }
+      const doc = await CustomerDbModel.findOneAndUpdate(
+        { phone },
+        { $set: setFields },
+        { new: true }
+      ).lean();
+      return toCustomer(doc);
+    }
+    return this.createCustomer({ ...data, phone } as InsertCustomer);
   }
 
   async updateCustomer(phone: string, updates: UpdateCustomer): Promise<Customer | undefined> {
@@ -193,15 +213,43 @@ export class MongoStorage implements IStorage {
   }
 
   async addCustomerAddress(phone: string, address: Omit<CustomerAddress, "id">): Promise<Customer | undefined> {
+    const ordered = {
+      label: address.label ?? "Home",
+      type: address.type ?? "house",
+      name: address.name ?? "",
+      phone: address.phone ?? "",
+      building: address.building ?? "",
+      street: address.street ?? "",
+      area: address.area ?? "",
+      pincode: address.pincode ?? "",
+      instructions: address.instructions ?? "",
+      isDefault: !!address.isDefault,
+    };
     const doc = await CustomerDbModel.findOneAndUpdate(
       { phone },
-      { $push: { addresses: address }, $set: { updatedAt: new Date() } },
+      { $push: { addresses: ordered }, $set: { updatedAt: new Date() } },
       { new: true }
     ).lean();
     return doc ? toCustomer(doc) : undefined;
   }
 
   async updateCustomerAddress(phone: string, addrId: string, updates: Partial<Omit<CustomerAddress, "id">>): Promise<Customer | undefined> {
+    // Synthetic id ("idx-N") for legacy addresses without _id — match by array position.
+    if (addrId.startsWith("idx-")) {
+      const idx = parseInt(addrId.slice(4), 10);
+      if (Number.isNaN(idx) || idx < 0) return undefined;
+      const setFields: Record<string, any> = { updatedAt: new Date() };
+      for (const [k, v] of Object.entries(updates)) {
+        setFields[`addresses.${idx}.${k}`] = v;
+      }
+      const doc = await CustomerDbModel.findOneAndUpdate(
+        { phone },
+        { $set: setFields },
+        { new: true }
+      ).lean();
+      return doc ? toCustomer(doc) : undefined;
+    }
+
     const setFields: Record<string, any> = { updatedAt: new Date() };
     for (const [k, v] of Object.entries(updates)) {
       setFields[`addresses.$.${k}`] = v;
@@ -215,6 +263,22 @@ export class MongoStorage implements IStorage {
   }
 
   async deleteCustomerAddress(phone: string, addrId: string): Promise<Customer | undefined> {
+    // Synthetic id ("idx-N") for legacy addresses without _id — unset by position then compact.
+    if (addrId.startsWith("idx-")) {
+      const idx = parseInt(addrId.slice(4), 10);
+      if (Number.isNaN(idx) || idx < 0) return undefined;
+      await CustomerDbModel.updateOne(
+        { phone },
+        { $unset: { [`addresses.${idx}`]: 1 } }
+      );
+      const doc = await CustomerDbModel.findOneAndUpdate(
+        { phone },
+        { $pull: { addresses: null as any }, $set: { updatedAt: new Date() } },
+        { new: true }
+      ).lean();
+      return doc ? toCustomer(doc) : undefined;
+    }
+
     const doc = await CustomerDbModel.findOneAndUpdate(
       { phone },
       { $pull: { addresses: { _id: addrId } }, $set: { updatedAt: new Date() } },
@@ -231,14 +295,28 @@ export class MongoStorage implements IStorage {
   async pushOrderToCustomer(phone: string, order: Omit<EmbeddedOrder, "updatedAt">): Promise<void> {
     try {
       const embeddedOrder = { ...order, updatedAt: new Date() };
+      const existing = await CustomerDbModel.findOne({ phone }).lean();
+      if (!existing) {
+        const now = new Date();
+        await CustomerDbModel.create({
+          name: null,
+          email: null,
+          phone,
+          dateOfBirth: null,
+          addresses: [],
+          orders: [embeddedOrder],
+          usedCoupons: [],
+          createdAt: now,
+          updatedAt: now,
+        });
+        return;
+      }
       await CustomerDbModel.findOneAndUpdate(
         { phone },
         {
           $push: { orders: embeddedOrder },
           $set: { updatedAt: new Date() },
-          $setOnInsert: { createdAt: new Date(), addresses: [] },
-        },
-        { upsert: true }
+        }
       );
     } catch (err) {
       console.error("Failed to push order to customer document:", err);
