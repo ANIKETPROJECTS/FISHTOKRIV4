@@ -376,7 +376,9 @@ export async function registerRoutes(
 
       // Resolve coupon details and hub identity before persisting
       let resolvedCoupon: any = null;
+      let resolvedCouponDoc: any = null;
       let resolvedSuperHubId: any = null;
+      let resolvedSuperHubName: string | null = null;
       let resolvedSubHubId: any = null;
       let resolvedSubHubName: string | null = null;
 
@@ -387,6 +389,14 @@ export async function registerRoutes(
             resolvedSubHubId = subHub._id;
             resolvedSuperHubId = subHub.superHubId;
             resolvedSubHubName = subHub.name;
+            if (subHub.superHubId) {
+              try {
+                const superHub = await SuperHubModel.findById(subHub.superHubId).lean() as any;
+                if (superHub) resolvedSuperHubName = superHub.name;
+              } catch (superHubErr) {
+                console.error("Super hub lookup error:", superHubErr);
+              }
+            }
           }
         } catch (hubLookupErr) {
           console.error("Hub lookup error:", hubLookupErr);
@@ -398,6 +408,7 @@ export async function registerRoutes(
             const code = String(input.couponCode).trim().toUpperCase();
             const coupon = await hub.Coupon.findOne({ code }).lean() as any;
             if (coupon) {
+              resolvedCouponDoc = coupon;
               const cartTotal = (input.items as any[]).reduce(
                 (sum: number, item: any) => sum + ((item.price ?? 0) * (item.quantity ?? 1)),
                 0
@@ -421,19 +432,68 @@ export async function registerRoutes(
         }
       }
 
+      // Lookup customer for customerId / email
+      let customerId: any = null;
+      let customerEmail: string | null = null;
+      try {
+        const customerDoc = await CustomerDbModel.findOne(
+          { phone: input.phone },
+          { _id: 1, email: 1 }
+        ).lean() as any;
+        if (customerDoc) {
+          customerId = customerDoc._id;
+          customerEmail = customerDoc.email ?? null;
+        }
+      } catch (customerLookupErr) {
+        console.error("Customer lookup error:", customerLookupErr);
+      }
+
+      // Compute totals
+      const subtotal = (input.items as any[]).reduce(
+        (sum: number, item: any) => sum + ((item.price ?? 0) * (item.quantity ?? 1)),
+        0
+      );
+      const discount = resolvedCoupon?.discountAmount ?? input.discountAmount ?? 0;
+      const isInstant = input.deliveryType === "instant" || input.scheduleType === "instant";
+      const slotCharge = isInstant ? (input.instantDeliveryCharge ?? 0) : 0;
+      const total = Math.max(0, subtotal - discount + slotCharge);
+
+      // Build coupon summary fields
+      const couponSummary = resolvedCouponDoc
+        ? {
+            id: resolvedCouponDoc._id,
+            code: resolvedCouponDoc.code,
+            title: resolvedCouponDoc.title ?? resolvedCouponDoc.code,
+            type: resolvedCouponDoc.type,
+            discountValue: resolvedCouponDoc.discountValue,
+            minOrderAmount: resolvedCouponDoc.minOrderAmount ?? 0,
+          }
+        : null;
+
       const orderInput = {
         ...input,
-        ...(resolvedCoupon && { coupon: resolvedCoupon }),
-        ...(resolvedSuperHubId && { superHubId: resolvedSuperHubId }),
-        ...(resolvedSubHubId && { subHubId: resolvedSubHubId }),
-        ...(resolvedSubHubName && { subHubName: resolvedSubHubName }),
+        customerId,
+        email: input.email ?? customerEmail,
+        subtotal,
+        discount,
+        slotCharge,
+        total,
+        coupon: resolvedCoupon ?? undefined,
+        couponId: resolvedCouponDoc?._id ?? null,
+        couponCode: resolvedCouponDoc?.code ?? null,
+        couponTitle: resolvedCouponDoc?.title ?? null,
+        couponIds: resolvedCouponDoc ? [resolvedCouponDoc._id] : [],
+        couponCodes: resolvedCouponDoc ? [resolvedCouponDoc.code] : [],
+        coupons: couponSummary ? [couponSummary] : [],
+        superHubId: resolvedSuperHubId,
+        superHubName: resolvedSuperHubName,
+        subHubId: resolvedSubHubId,
+        subHubName: resolvedSubHubName,
+        source: "storefront",
+        inventoryDeducted: !!input.hubDbName,
       };
 
       const order = await storage.createOrderRequest(orderInput);
-
-      const total = (order.items as any[]).reduce((sum: number, item: any) => {
-        return sum + ((item.price ?? 0) * (item.quantity ?? 1));
-      }, 0);
 
       await storage.pushOrderToCustomer(order.phone, {
         orderId: order.id,

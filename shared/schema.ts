@@ -107,10 +107,27 @@ export type InsertSection = {
 
 export type OrderItem = {
   productId: string;
-  quantity: number;
   name: string;
   price: number | null;
+  quantity: number;
+  unit?: string | null;
   imageUrl?: string | null;
+};
+
+export type OrderPayment = {
+  method: string;
+  amount: number;
+  status: string;
+  paidAt: Date | null;
+};
+
+export type OrderCouponSummary = {
+  id: string;
+  code: string;
+  title: string;
+  type: string;
+  discountValue: number;
+  minOrderAmount: number;
 };
 
 export type Timeslot = {
@@ -134,33 +151,68 @@ export type OrderCoupon = {
 
 export type OrderRequest = {
   id: string;
+  customerId?: string | null;
   customerName: string;
   phone: string;
-  deliveryArea: string;
-  address: string;
+  email?: string | null;
   items: OrderItem[];
-  status: string;
-  notes: string | null;
-  createdAt: Date;
+  subtotal?: number | null;
+  discount?: number | null;
+  slotCharge?: number | null;
+  total?: number | null;
   deliveryType?: string | null;
-  timeslotLabel?: string | null;
-  instantDeliveryCharge?: number | null;
-  coupon?: OrderCoupon | null;
-  superHubId?: string | null;
+  address: string;
+  deliveryArea: string;
+  deliveryAddressDetail?: CustomerAddress | null;
+  pickupLocation?: string | null;
+  notes: string | null;
+  status: string;
+  source?: string | null;
   subHubId?: string | null;
   subHubName?: string | null;
+  superHubId?: string | null;
+  superHubName?: string | null;
+  couponId?: string | null;
+  couponCode?: string | null;
+  couponTitle?: string | null;
+  couponIds?: string[];
+  couponCodes?: string[];
+  coupons?: OrderCouponSummary[];
+  paymentStatus?: string | null;
+  payments?: OrderPayment[];
+  paidAmount?: number | null;
+  dueAmount?: number | null;
+  scheduleType?: string | null;
+  deliveryDate?: string | null;
+  timeslotId?: string | null;
+  timeslotLabel?: string | null;
+  timeslotStart?: string | null;
+  timeslotEnd?: string | null;
+  instantDeliveryCharge?: number | null;
+  createdAt: Date;
+  updatedAt?: Date | null;
+  inventoryDeducted?: boolean;
+  // Legacy / compatibility
+  coupon?: OrderCoupon | null;
 };
 
 export type InsertOrderRequest = {
   customerName: string;
   phone: string;
+  email?: string | null;
   deliveryArea: string;
   address: string;
+  deliveryAddressDetail?: Partial<CustomerAddress> | null;
   items: OrderItem[];
   notes?: string | null;
   hubDbName?: string | null;
   deliveryType?: string | null;
+  scheduleType?: string | null;
+  deliveryDate?: string | null;
+  timeslotId?: string | null;
   timeslotLabel?: string | null;
+  timeslotStart?: string | null;
+  timeslotEnd?: string | null;
   instantDeliveryCharge?: number | null;
   coupon?: OrderCoupon | null;
   superHubId?: string | null;
@@ -223,18 +275,37 @@ export const insertSectionSchema = z.object({
 export const insertOrderRequestSchema = z.object({
   customerName: z.string().min(1, "Name is required"),
   phone: z.string().min(1, "Phone is required"),
+  email: z.string().nullable().optional(),
   deliveryArea: z.string().min(1, "Delivery area is required"),
   address: z.string().min(1, "Address is required"),
+  deliveryAddressDetail: z.object({
+    label: z.string().optional(),
+    type: z.string().optional(),
+    name: z.string().optional(),
+    phone: z.string().optional(),
+    building: z.string().optional(),
+    street: z.string().optional(),
+    area: z.string().optional(),
+    pincode: z.string().optional(),
+    instructions: z.string().optional(),
+    isDefault: z.boolean().optional(),
+  }).nullable().optional(),
   items: z.array(z.object({
     productId: z.string(),
     quantity: z.number().min(1),
     name: z.string(),
     price: z.number().nullable(),
+    unit: z.string().nullable().optional(),
   })).min(1, "At least one item is required"),
   notes: z.string().nullable().optional(),
   hubDbName: z.string().nullable().optional(),
   deliveryType: z.string().nullable().optional(),
+  scheduleType: z.string().nullable().optional(),
+  deliveryDate: z.string().nullable().optional(),
+  timeslotId: z.string().nullable().optional(),
   timeslotLabel: z.string().nullable().optional(),
+  timeslotStart: z.string().nullable().optional(),
+  timeslotEnd: z.string().nullable().optional(),
   instantDeliveryCharge: z.number().nullable().optional(),
   couponCode: z.string().nullable().optional(),
   discountAmount: z.number().nullable().optional(),

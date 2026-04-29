@@ -4,33 +4,97 @@ const MONGODB_URI = process.env.MONGODB_URI!;
 
 let ordersConnection: mongoose.Connection | null = null;
 
-const orderCouponSchema = new mongoose.Schema(
+const orderItemSchema = new mongoose.Schema(
   {
-    couponId: { type: mongoose.Schema.Types.ObjectId, default: null },
+    productId: { type: String, default: null },
+    name: { type: String, required: true },
+    price: { type: Number, default: null },
+    quantity: { type: Number, required: true },
+    unit: { type: String, default: null },
+  },
+  { _id: false }
+);
+
+const orderAddressDetailSchema = new mongoose.Schema(
+  {
+    label: { type: String, default: "Home" },
+    type: { type: String, default: "house" },
+    name: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    building: { type: String, default: "" },
+    street: { type: String, default: "" },
+    area: { type: String, default: "" },
+    pincode: { type: String, default: "" },
+    instructions: { type: String, default: "" },
+    isDefault: { type: Boolean, default: false },
+  },
+  { _id: false }
+);
+
+const orderCouponSummarySchema = new mongoose.Schema(
+  {
+    id: { type: mongoose.Schema.Types.ObjectId, default: null },
     code: { type: String, default: null },
-    discountType: { type: String, default: null },
+    title: { type: String, default: null },
+    type: { type: String, default: null },
     discountValue: { type: Number, default: null },
-    discountAmount: { type: Number, default: null },
+    minOrderAmount: { type: Number, default: 0 },
+  },
+  { _id: false }
+);
+
+const orderPaymentSchema = new mongoose.Schema(
+  {
+    method: { type: String, default: null },
+    amount: { type: Number, default: 0 },
+    status: { type: String, default: "pending" },
+    paidAt: { type: Date, default: null },
   },
   { _id: false }
 );
 
 const orderSchema = new mongoose.Schema({
+  customerId: { type: mongoose.Schema.Types.ObjectId, default: null },
   customerName: { type: String, required: true },
   phone: { type: String, required: true },
-  deliveryArea: { type: String, required: true },
+  email: { type: String, default: null },
+  items: { type: [orderItemSchema], required: true },
+  subtotal: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 },
+  slotCharge: { type: Number, default: 0 },
+  total: { type: Number, default: 0 },
+  deliveryType: { type: String, default: "delivery" },
   address: { type: String, required: true },
-  items: { type: mongoose.Schema.Types.Mixed, required: true },
-  status: { type: String, default: "pending" },
+  deliveryArea: { type: String, required: true },
+  deliveryAddressDetail: { type: orderAddressDetailSchema, default: null },
+  pickupLocation: { type: String, default: "" },
   notes: { type: String, default: null },
-  createdAt: { type: Date, default: Date.now },
-  deliveryType: { type: String, default: null },
-  timeslotLabel: { type: String, default: null },
-  instantDeliveryCharge: { type: Number, default: null },
-  coupon: { type: orderCouponSchema, default: null },
-  superHubId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  status: { type: String, default: "pending" },
+  source: { type: String, default: "storefront" },
   subHubId: { type: mongoose.Schema.Types.ObjectId, default: null },
   subHubName: { type: String, default: null },
+  superHubId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  superHubName: { type: String, default: null },
+  couponId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  couponCode: { type: String, default: null },
+  couponTitle: { type: String, default: null },
+  couponIds: { type: [mongoose.Schema.Types.ObjectId], default: [] },
+  couponCodes: { type: [String], default: [] },
+  coupons: { type: [orderCouponSummarySchema], default: [] },
+  paymentStatus: { type: String, default: "unpaid" },
+  payments: { type: [orderPaymentSchema], default: [] },
+  paidAmount: { type: Number, default: 0 },
+  dueAmount: { type: Number, default: 0 },
+  scheduleType: { type: String, default: "slot" },
+  deliveryDate: { type: String, default: null },
+  timeslotId: { type: mongoose.Schema.Types.ObjectId, default: null },
+  timeslotLabel: { type: String, default: null },
+  timeslotStart: { type: String, default: null },
+  timeslotEnd: { type: String, default: null },
+  instantDeliveryCharge: { type: Number, default: null },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now },
+  inventoryDeducted: { type: Boolean, default: false },
 });
 
 export async function connectOrdersDb() {

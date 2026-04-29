@@ -60,19 +60,91 @@ function toCustomer(doc: any): Customer {
 }
 
 function toOrder(doc: any): OrderRequest {
+  const items = (doc.items ?? []).map((it: any) => ({
+    productId: it.productId ?? null,
+    name: it.name,
+    price: it.price ?? null,
+    quantity: it.quantity,
+    unit: it.unit ?? null,
+    imageUrl: it.imageUrl ?? null,
+  }));
+
+  const subtotal = doc.subtotal ?? items.reduce(
+    (s: number, it: any) => s + ((it.price ?? 0) * (it.quantity ?? 1)),
+    0,
+  );
+  const discount = doc.discount ?? doc.coupon?.discountAmount ?? 0;
+  const slotCharge = doc.slotCharge ?? doc.instantDeliveryCharge ?? 0;
+  const total = doc.total ?? Math.max(0, subtotal - discount + slotCharge);
+
+  const detail = doc.deliveryAddressDetail
+    ? {
+        id: doc.deliveryAddressDetail._id ? doc.deliveryAddressDetail._id.toString() : "",
+        label: doc.deliveryAddressDetail.label ?? "Home",
+        type: (doc.deliveryAddressDetail.type ?? "house") as "house" | "office" | "other",
+        name: doc.deliveryAddressDetail.name ?? "",
+        phone: doc.deliveryAddressDetail.phone ?? "",
+        building: doc.deliveryAddressDetail.building ?? "",
+        street: doc.deliveryAddressDetail.street ?? "",
+        area: doc.deliveryAddressDetail.area ?? "",
+        pincode: doc.deliveryAddressDetail.pincode ?? "",
+        instructions: doc.deliveryAddressDetail.instructions ?? "",
+        isDefault: !!doc.deliveryAddressDetail.isDefault,
+      }
+    : null;
+
+  const coupons = (doc.coupons ?? []).map((c: any) => ({
+    id: c.id?.toString() ?? "",
+    code: c.code ?? "",
+    title: c.title ?? "",
+    type: c.type ?? "",
+    discountValue: c.discountValue ?? 0,
+    minOrderAmount: c.minOrderAmount ?? 0,
+  }));
+
   return {
     id: doc._id.toString(),
+    customerId: doc.customerId?.toString() ?? null,
     customerName: doc.customerName,
     phone: doc.phone,
-    deliveryArea: doc.deliveryArea,
-    address: doc.address,
-    items: doc.items,
-    status: doc.status,
-    notes: doc.notes ?? null,
-    createdAt: doc.createdAt,
+    email: doc.email ?? null,
+    items,
+    subtotal,
+    discount,
+    slotCharge,
+    total,
     deliveryType: doc.deliveryType ?? null,
+    address: doc.address,
+    deliveryArea: doc.deliveryArea,
+    deliveryAddressDetail: detail,
+    pickupLocation: doc.pickupLocation ?? "",
+    notes: doc.notes ?? null,
+    status: doc.status,
+    source: doc.source ?? null,
+    subHubId: doc.subHubId?.toString() ?? null,
+    subHubName: doc.subHubName ?? null,
+    superHubId: doc.superHubId?.toString() ?? null,
+    superHubName: doc.superHubName ?? null,
+    couponId: doc.couponId?.toString() ?? doc.coupon?.couponId?.toString() ?? null,
+    couponCode: doc.couponCode ?? doc.coupon?.code ?? null,
+    couponTitle: doc.couponTitle ?? null,
+    couponIds: (doc.couponIds ?? []).map((x: any) => x.toString()),
+    couponCodes: doc.couponCodes ?? [],
+    coupons,
+    paymentStatus: doc.paymentStatus ?? "unpaid",
+    payments: doc.payments ?? [],
+    paidAmount: doc.paidAmount ?? 0,
+    dueAmount: doc.dueAmount ?? total,
+    scheduleType: doc.scheduleType ?? null,
+    deliveryDate: doc.deliveryDate ?? null,
+    timeslotId: doc.timeslotId?.toString() ?? null,
     timeslotLabel: doc.timeslotLabel ?? null,
+    timeslotStart: doc.timeslotStart ?? null,
+    timeslotEnd: doc.timeslotEnd ?? null,
     instantDeliveryCharge: doc.instantDeliveryCharge ?? null,
+    createdAt: doc.createdAt,
+    updatedAt: doc.updatedAt ?? doc.createdAt ?? null,
+    inventoryDeducted: !!doc.inventoryDeducted,
     coupon: doc.coupon
       ? {
           couponId: doc.coupon.couponId?.toString() ?? null,
@@ -82,9 +154,6 @@ function toOrder(doc: any): OrderRequest {
           discountAmount: doc.coupon.discountAmount,
         }
       : null,
-    superHubId: doc.superHubId?.toString() ?? null,
-    subHubId: doc.subHubId?.toString() ?? null,
-    subHubName: doc.subHubName ?? null,
   };
 }
 
@@ -146,18 +215,112 @@ export class MongoStorage implements IStorage {
     }
   }
 
-  async createOrderRequest(order: InsertOrderRequest): Promise<OrderRequest> {
+  async createOrderRequest(order: InsertOrderRequest & {
+    customerId?: string | null;
+    email?: string | null;
+    subtotal?: number;
+    discount?: number;
+    slotCharge?: number;
+    total?: number;
+    source?: string;
+    couponId?: string | null;
+    couponCode?: string | null;
+    couponTitle?: string | null;
+    couponIds?: string[];
+    couponCodes?: string[];
+    coupons?: any[];
+    superHubName?: string | null;
+    inventoryDeducted?: boolean;
+  }): Promise<OrderRequest> {
+    const items = (order.items ?? []).map((it: any) => ({
+      productId: it.productId ?? null,
+      name: it.name,
+      price: it.price ?? null,
+      quantity: it.quantity,
+      unit: it.unit ?? null,
+    }));
+
+    const subtotal = order.subtotal ?? items.reduce(
+      (s: number, it: any) => s + ((it.price ?? 0) * (it.quantity ?? 1)),
+      0,
+    );
+    const discount = order.discount ?? 0;
+    const slotCharge = order.slotCharge ?? order.instantDeliveryCharge ?? 0;
+    const total = order.total ?? Math.max(0, subtotal - discount + slotCharge);
+
+    const isInstant = order.deliveryType === "instant" || order.scheduleType === "instant";
+    const scheduleType = order.scheduleType ?? (isInstant ? "instant" : "slot");
+    const deliveryType = isInstant ? "delivery" : (order.deliveryType === "next-day" ? "delivery" : (order.deliveryType ?? "delivery"));
+
+    const detail = order.deliveryAddressDetail
+      ? {
+          label: order.deliveryAddressDetail.label ?? "Home",
+          type: order.deliveryAddressDetail.type ?? "house",
+          name: order.deliveryAddressDetail.name ?? "",
+          phone: order.deliveryAddressDetail.phone ?? "",
+          building: order.deliveryAddressDetail.building ?? "",
+          street: order.deliveryAddressDetail.street ?? "",
+          area: order.deliveryAddressDetail.area ?? "",
+          pincode: order.deliveryAddressDetail.pincode ?? "",
+          instructions: order.deliveryAddressDetail.instructions ?? "",
+          isDefault: !!order.deliveryAddressDetail.isDefault,
+        }
+      : null;
+
+    const now = new Date();
     const doc = await getOrderModel().create({
-      ...order,
+      customerId: order.customerId ?? null,
+      customerName: order.customerName,
+      phone: order.phone,
+      email: order.email ?? null,
+      items,
+      subtotal,
+      discount,
+      slotCharge,
+      total,
+      deliveryType,
+      address: order.address,
+      deliveryArea: order.deliveryArea,
+      deliveryAddressDetail: detail,
+      pickupLocation: "",
+      notes: order.notes ?? null,
       status: "pending",
-      createdAt: new Date(),
+      source: order.source ?? "storefront",
+      subHubId: order.subHubId ?? null,
+      subHubName: order.subHubName ?? null,
+      superHubId: order.superHubId ?? null,
+      superHubName: order.superHubName ?? null,
+      couponId: order.couponId ?? null,
+      couponCode: order.couponCode ?? null,
+      couponTitle: order.couponTitle ?? null,
+      couponIds: order.couponIds ?? [],
+      couponCodes: order.couponCodes ?? [],
+      coupons: order.coupons ?? [],
+      paymentStatus: "unpaid",
+      payments: [],
+      paidAmount: 0,
+      dueAmount: total,
+      scheduleType,
+      deliveryDate: order.deliveryDate ?? null,
+      timeslotId: order.timeslotId ?? null,
+      timeslotLabel: order.timeslotLabel ?? null,
+      timeslotStart: order.timeslotStart ?? null,
+      timeslotEnd: order.timeslotEnd ?? null,
+      instantDeliveryCharge: isInstant ? (order.instantDeliveryCharge ?? null) : null,
+      createdAt: now,
+      updatedAt: now,
+      inventoryDeducted: !!order.inventoryDeducted,
     });
     return toOrder(doc);
   }
 
   async updateOrderRequestStatus(id: string, status: string): Promise<OrderRequest | undefined> {
     try {
-      const doc = await getOrderModel().findByIdAndUpdate(id, { status }, { new: true }).lean();
+      const doc = await getOrderModel().findByIdAndUpdate(
+        id,
+        { status, updatedAt: new Date() },
+        { new: true },
+      ).lean();
       return doc ? toOrder(doc) : undefined;
     } catch {
       return undefined;

@@ -488,7 +488,7 @@ export function CartDrawer() {
       return;
     }
     const fullAddress = [selected.building, selected.street, selected.area, selected.pincode].filter(Boolean).join(", ");
-    const orderItems = items.map(i => ({ productId: i.id, quantity: i.quantity, name: i.name, price: i.price, imageUrl: i.imageUrl ?? null }));
+    const orderItems = items.map(i => ({ productId: i.id, quantity: i.quantity, name: i.name, price: i.price, unit: (i as any).unit ?? null, imageUrl: i.imageUrl ?? null }));
     const isNextDay = (selectedTimeslot as any).isNextDay === true;
     const nextDaySubSlot = isNextDay ? timeslots.find(t => t.id === selectedNextDaySubSlotId) : null;
     if (isNextDay && !nextDaySubSlot) {
@@ -500,16 +500,40 @@ export function CartDrawer() {
       : isNextDay && nextDaySubSlot
         ? `${selectedTimeslot.label} · ${nextDaySubSlot.label} (${nextDaySubSlot.startTime} – ${nextDaySubSlot.endTime})`
         : `${selectedTimeslot.label} (${selectedTimeslot.startTime} – ${selectedTimeslot.endTime})`;
+    const effectiveSlot = isNextDay && nextDaySubSlot ? nextDaySubSlot : selectedTimeslot;
+    const scheduleType = selectedTimeslot.isInstant ? "instant" : isNextDay ? "next-day" : "slot";
+    const today = new Date();
+    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    const fmtDate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const deliveryDate = selectedTimeslot.isInstant ? fmtDate(today) : isNextDay ? fmtDate(tomorrow) : fmtDate(today);
     createOrder(
       {
         customerName: selected.name || customer?.name || "",
         phone: selected.phone || customer?.phone || "",
+        email: customer?.email ?? null,
         deliveryArea: selected.area,
         address: fullAddress,
+        deliveryAddressDetail: {
+          label: selected.label,
+          type: selected.type,
+          name: selected.name,
+          phone: selected.phone,
+          building: selected.building,
+          street: selected.street,
+          area: selected.area,
+          pincode: selected.pincode,
+          instructions: selected.instructions,
+          isDefault: !!selected.isDefault,
+        },
         notes: selected.instructions,
         items: orderItems,
         deliveryType: selectedTimeslot.isInstant ? "instant" : isNextDay ? "next-day" : "slot",
+        scheduleType,
+        deliveryDate,
+        timeslotId: selectedTimeslot.isInstant ? null : effectiveSlot.id,
         timeslotLabel: slotLabel,
+        timeslotStart: selectedTimeslot.isInstant ? null : effectiveSlot.startTime,
+        timeslotEnd: selectedTimeslot.isInstant ? null : effectiveSlot.endTime,
         instantDeliveryCharge: selectedTimeslot.isInstant ? selectedTimeslot.extraCharge : null,
         couponCode: appliedCoupon?.code ?? null,
         discountAmount: discountAmount > 0 ? discountAmount : null,
