@@ -159,6 +159,68 @@ function printOrderInvoice(order: OrderRequest, items: OrderItem[]) {
     </tr>
   `).join("");
 
+  const paymentList = (Array.isArray(order.payments) ? order.payments : []).filter(p => (p?.amount ?? 0) > 0);
+  const paidAmount = order.paidAmount ?? paymentList.reduce((s, p) => s + (p?.amount ?? 0), 0);
+  const dueAmount = order.dueAmount ?? Math.max(0, total - paidAmount);
+  const paymentStatus = (order.paymentStatus ?? (paidAmount >= total && total > 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid")).toLowerCase();
+  const statusLabelMap: Record<string, { label: string; color: string; bg: string; border: string }> = {
+    paid:     { label: "Paid",            color: "#047857", bg: "#ecfdf5", border: "#a7f3d0" },
+    partial:  { label: "Partially Paid",  color: "#b45309", bg: "#fffbeb", border: "#fcd34d" },
+    unpaid:   { label: "Unpaid",          color: "#b91c1c", bg: "#fef2f2", border: "#fecaca" },
+    refunded: { label: "Refunded",        color: "#475569", bg: "#f1f5f9", border: "#cbd5e1" },
+  };
+  const statusBadge = statusLabelMap[paymentStatus] ?? statusLabelMap.unpaid;
+  const prettyMode = (m: string | null | undefined): string => {
+    const k = (m ?? "").toString().toLowerCase();
+    const map: Record<string, string> = { cash: "Cash", cod: "Cash on Delivery", upi: "UPI", card: "Card", online: "Online", netbanking: "Net Banking", wallet: "Wallet" };
+    if (!k) return "Payment";
+    return map[k] ?? k.charAt(0).toUpperCase() + k.slice(1);
+  };
+  const fmtPaidAt = (d: any) => d
+    ? new Date(d).toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+    : "";
+  const paymentRowsHtml = paymentList.map((p, i) => `
+    <tr>
+      <td class="num">${i + 1}</td>
+      <td>
+        <div style="font-weight:600;color:#111827;">${escapeHtml(prettyMode(p?.mode))}</div>
+        ${p?.paidAt ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">${escapeHtml(fmtPaidAt(p.paidAt))}</div>` : ""}
+        ${p?.reference ? `<div style="font-size:11px;color:#6b7280;margin-top:2px;">Ref: ${escapeHtml(p.reference)}</div>` : ""}
+      </td>
+      <td class="right" style="font-weight:600;color:#111827;">${inr(p?.amount ?? 0)}</td>
+    </tr>
+  `).join("");
+  const paymentSectionHtml = (paymentList.length > 0 || paymentStatus !== "unpaid") ? `
+    <div class="section">
+      <h3>Payment Information</h3>
+      <div class="paybox">
+        <div class="payhead">
+          <div>
+            <span class="paystatus" style="color:${statusBadge.color};background:${statusBadge.bg};border-color:${statusBadge.border};">${escapeHtml(statusBadge.label)}</span>
+            ${paymentList.length > 1 ? `<span style="margin-left:8px;font-size:11px;color:#6b7280;">${paymentList.length} payment methods used</span>` : ""}
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.8px;">Total Paid</div>
+            <div style="font-size:15px;font-weight:700;color:#111827;">${inr(paidAmount)}</div>
+            ${dueAmount > 0 ? `<div style="font-size:11px;color:#b91c1c;font-weight:600;margin-top:2px;">Due ${inr(dueAmount)}</div>` : ""}
+          </div>
+        </div>
+        ${paymentList.length > 0 ? `
+          <table style="margin-top:10px;">
+            <thead>
+              <tr>
+                <th class="num" style="width:36px;">#</th>
+                <th>Method &amp; Details</th>
+                <th class="right" style="width:110px;">Amount</th>
+              </tr>
+            </thead>
+            <tbody>${paymentRowsHtml}</tbody>
+          </table>
+        ` : ""}
+      </div>
+    </div>
+  ` : "";
+
   const html = `<!doctype html>
 <html>
 <head>
@@ -190,6 +252,11 @@ function printOrderInvoice(order: OrderRequest, items: OrderItem[]) {
   .totals .row.grand { font-size: 15px; font-weight: 700; color: #111827; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
   .free { color: #059669; font-weight: 600; }
   .notes { margin-top: 18px; padding: 10px 12px; border-left: 3px solid #364F9F; background: #f1f5f9; font-size: 12px; color: #1f2937; border-radius: 0 6px 6px 0; }
+  .paybox { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
+  .paybox .payhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .paystatus { display: inline-block; padding: 3px 10px; border-radius: 999px; border: 1px solid; font-size: 11px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; }
+  .paybox table thead th { padding: 6px 6px; }
+  .paybox table tbody td { padding: 7px 6px; }
   .footer { margin-top: 22px; text-align: center; font-size: 11px; color: #6b7280; padding-top: 14px; border-top: 1px dashed #e5e7eb; }
   @media print {
     body { padding: 0; }
@@ -242,9 +309,11 @@ function printOrderInvoice(order: OrderRequest, items: OrderItem[]) {
         <div class="row"><span>Delivery Fee</span><span>${deliveryFee === 0 ? '<span class="free">FREE</span>' : inr(deliveryFee)}</span></div>
         ${discount > 0 ? `<div class="row discount"><span>Coupon Discount${couponCode ? ` (${escapeHtml(couponCode)})` : ""}</span><span>-${inr(discount)}</span></div>` : ""}
         <div class="row"><span>GST (5%)</span><span>Included</span></div>
-        <div class="row grand"><span>Total Paid</span><span>${inr(total)}</span></div>
+        <div class="row grand"><span>Grand Total</span><span>${inr(total)}</span></div>
       </div>
     </div>
+
+    ${paymentSectionHtml}
 
     ${order.notes ? `<div class="notes"><strong>Order Notes:</strong> ${escapeHtml(order.notes)}</div>` : ""}
 
