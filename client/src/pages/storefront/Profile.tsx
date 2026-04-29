@@ -55,7 +55,7 @@ import {
   CheckCircle2, ChevronLeft, Home, Briefcase, Tag, Navigation,
   ShoppingBag, Clock, Truck, PackageCheck, ChevronDown, ChevronUp,
   Receipt, Package, AlertCircle, LogOut, LayoutGrid, List,
-  Search, X, ChevronRight, Navigation2
+  Search, X, ChevronRight, Navigation2, Printer
 } from "lucide-react";
 
 function getFallbackImage(category: string): string {
@@ -130,6 +130,135 @@ function getOrderTotals(order: OrderRequest) {
 
 function getOrderTotal(order: OrderRequest) {
   return getOrderTotals(order).total;
+}
+
+function printOrderInvoice(order: OrderRequest, items: OrderItem[]) {
+  const { subtotal, discount, deliveryFee, total, couponCode } = getOrderTotals(order);
+  const date = order.createdAt
+    ? new Date(order.createdAt).toLocaleString("en-IN", {
+        day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+      })
+    : "";
+  const invoiceNo = `#${String(order.id).padStart(6, "0")}`;
+  const inr = (n: number) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
+  const escapeHtml = (s: any) =>
+    String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const itemsHtml = items.map((it, idx) => `
+    <tr>
+      <td class="num">${idx + 1}</td>
+      <td>${escapeHtml(it.name)}</td>
+      <td class="num">${it.quantity}</td>
+      <td class="num right">${inr(it.price ?? 0)}</td>
+      <td class="num right">${inr((it.price ?? 0) * it.quantity)}</td>
+    </tr>
+  `).join("");
+
+  const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>FishTokri Invoice ${escapeHtml(invoiceNo)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #1f2937; margin: 0; padding: 24px; background: #fff; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 16px; border-bottom: 2px solid #364F9F; }
+  .brand h1 { margin: 0; color: #364F9F; font-size: 26px; letter-spacing: 0.5px; }
+  .brand p { margin: 4px 0 0; color: #6b7280; font-size: 12px; }
+  .meta { text-align: right; }
+  .meta .label { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; }
+  .meta .value { font-size: 13px; color: #111827; font-weight: 600; margin-top: 2px; }
+  .section { margin-top: 18px; }
+  .section h3 { font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 1.2px; margin: 0 0 6px; }
+  .billto { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
+  .billto .name { font-weight: 600; color: #111827; font-size: 14px; }
+  .billto .row { color: #4b5563; font-size: 12px; margin-top: 2px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 13px; }
+  thead th { text-align: left; font-size: 11px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.8px; padding: 8px 6px; border-bottom: 1px solid #e5e7eb; }
+  tbody td { padding: 9px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+  td.num, th.num { text-align: center; }
+  td.right, th.right { text-align: right; }
+  .totals { margin-top: 14px; margin-left: auto; width: 320px; }
+  .totals .row { display: flex; justify-content: space-between; font-size: 13px; padding: 5px 0; color: #4b5563; }
+  .totals .row.discount { color: #059669; }
+  .totals .row.grand { font-size: 15px; font-weight: 700; color: #111827; border-top: 1px solid #e5e7eb; padding-top: 10px; margin-top: 6px; }
+  .free { color: #059669; font-weight: 600; }
+  .notes { margin-top: 18px; padding: 10px 12px; border-left: 3px solid #364F9F; background: #f1f5f9; font-size: 12px; color: #1f2937; border-radius: 0 6px 6px 0; }
+  .footer { margin-top: 22px; text-align: center; font-size: 11px; color: #6b7280; padding-top: 14px; border-top: 1px dashed #e5e7eb; }
+  @media print {
+    body { padding: 0; }
+    .noprint { display: none !important; }
+  }
+  .printbtn { position: fixed; top: 16px; right: 16px; background: #364F9F; color: #fff; border: 0; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 14px rgba(54,79,159,0.25); }
+</style>
+</head>
+<body>
+  <button class="printbtn noprint" onclick="window.print()">Print</button>
+  <div class="wrap">
+    <div class="header">
+      <div class="brand">
+        <h1>FishTokri</h1>
+        <p>Fresh Fish, Seafood &amp; Meat · Mumbai</p>
+      </div>
+      <div class="meta">
+        <div class="label">Tax Invoice</div>
+        <div class="value">${escapeHtml(invoiceNo)}</div>
+        <div class="row" style="font-size:11px;color:#6b7280;margin-top:2px;">${escapeHtml(date)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Bill To</h3>
+      <div class="billto">
+        <div class="name">${escapeHtml(order.customerName)}</div>
+        <div class="row">${escapeHtml(order.phone)}</div>
+        <div class="row">${escapeHtml(order.address)}, ${escapeHtml(order.deliveryArea)}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Items</h3>
+      <table>
+        <thead>
+          <tr>
+            <th class="num" style="width:36px;">#</th>
+            <th>Item</th>
+            <th class="num" style="width:60px;">Qty</th>
+            <th class="right" style="width:90px;">Rate</th>
+            <th class="right" style="width:110px;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>${itemsHtml}</tbody>
+      </table>
+
+      <div class="totals">
+        <div class="row"><span>Subtotal</span><span>${inr(subtotal)}</span></div>
+        <div class="row"><span>Delivery Fee</span><span>${deliveryFee === 0 ? '<span class="free">FREE</span>' : inr(deliveryFee)}</span></div>
+        ${discount > 0 ? `<div class="row discount"><span>Coupon Discount${couponCode ? ` (${escapeHtml(couponCode)})` : ""}</span><span>-${inr(discount)}</span></div>` : ""}
+        <div class="row"><span>GST (5%)</span><span>Included</span></div>
+        <div class="row grand"><span>Total Paid</span><span>${inr(total)}</span></div>
+      </div>
+    </div>
+
+    ${order.notes ? `<div class="notes"><strong>Order Notes:</strong> ${escapeHtml(order.notes)}</div>` : ""}
+
+    <div class="footer">Thank you for shopping with FishTokri!</div>
+  </div>
+  <script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 250); });</script>
+</body>
+</html>`;
+
+  const w = window.open("", "_blank", "width=820,height=900");
+  if (!w) return;
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
 }
 
 const TRACK_STEPS = [
@@ -374,9 +503,20 @@ function OrderCard({ order, productImageMap }: { order: OrderRequest; productIma
                 <p className="text-xs font-bold text-foreground uppercase tracking-widest">Tax Invoice</p>
                 <p className="text-[11px] text-muted-foreground">FishTokri · Mumbai</p>
               </div>
-              <div className="text-right">
-                <p className="text-xs font-semibold text-foreground">#{String(order.id).padStart(6, "0")}</p>
-                <p className="text-[11px] text-muted-foreground">{date}</p>
+              <div className="flex items-start gap-2">
+                <button
+                  type="button"
+                  onClick={() => printOrderInvoice(order, items)}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-primary text-white text-[11px] font-semibold hover:bg-primary/90 transition-colors shadow-sm"
+                  data-testid={`button-print-invoice-${order.id}`}
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print
+                </button>
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-foreground">#{String(order.id).padStart(6, "0")}</p>
+                  <p className="text-[11px] text-muted-foreground">{date}</p>
+                </div>
               </div>
             </div>
 
