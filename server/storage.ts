@@ -268,8 +268,23 @@ export class MongoStorage implements IStorage {
       : null;
 
     const now = new Date();
-    const doc = await getOrderModel().create({
-      customerId: order.customerId ?? null,
+    const Model = getOrderModel();
+
+    const toObjectId = (val: any): mongoose.Types.ObjectId | null => {
+      if (!val) return null;
+      try {
+        if (val instanceof mongoose.Types.ObjectId) return val;
+        if (typeof val === "string" && mongoose.Types.ObjectId.isValid(val)) {
+          return new mongoose.Types.ObjectId(val);
+        }
+      } catch {
+        return null;
+      }
+      return null;
+    };
+
+    const orderedDoc: Record<string, any> = {
+      customerId: toObjectId(order.customerId),
       customerName: order.customerName,
       phone: order.phone,
       email: order.email ?? null,
@@ -286,23 +301,30 @@ export class MongoStorage implements IStorage {
       notes: order.notes ?? null,
       status: "pending",
       source: order.source ?? "storefront",
-      subHubId: order.subHubId ?? null,
+      subHubId: toObjectId(order.subHubId),
       subHubName: order.subHubName ?? null,
-      superHubId: order.superHubId ?? null,
+      superHubId: toObjectId(order.superHubId),
       superHubName: order.superHubName ?? null,
-      couponId: order.couponId ?? null,
+      couponId: toObjectId(order.couponId),
       couponCode: order.couponCode ?? null,
       couponTitle: order.couponTitle ?? null,
-      couponIds: order.couponIds ?? [],
+      couponIds: (order.couponIds ?? []).map(toObjectId).filter(Boolean),
       couponCodes: order.couponCodes ?? [],
-      coupons: order.coupons ?? [],
+      coupons: (order.coupons ?? []).map((c: any) => ({
+        id: toObjectId(c.id),
+        code: c.code,
+        title: c.title,
+        type: c.type,
+        discountValue: c.discountValue,
+        minOrderAmount: c.minOrderAmount ?? 0,
+      })),
       paymentStatus: "unpaid",
       payments: [],
       paidAmount: 0,
       dueAmount: total,
       scheduleType,
       deliveryDate: order.deliveryDate ?? null,
-      timeslotId: order.timeslotId ?? null,
+      timeslotId: toObjectId(order.timeslotId),
       timeslotLabel: order.timeslotLabel ?? null,
       timeslotStart: order.timeslotStart ?? null,
       timeslotEnd: order.timeslotEnd ?? null,
@@ -310,7 +332,11 @@ export class MongoStorage implements IStorage {
       createdAt: now,
       updatedAt: now,
       inventoryDeducted: !!order.inventoryDeducted,
-    });
+      __v: 0,
+    };
+
+    const result = await Model.collection.insertOne(orderedDoc as any);
+    const doc = await Model.findById(result.insertedId).lean();
     return toOrder(doc);
   }
 
@@ -334,17 +360,20 @@ export class MongoStorage implements IStorage {
 
   async createCustomer(data: InsertCustomer): Promise<Customer> {
     const now = new Date();
-    const doc = await CustomerDbModel.create({
+    const ordered = {
       name: data.name ?? null,
       email: data.email ?? null,
       phone: data.phone,
       dateOfBirth: data.dateOfBirth ?? null,
-      addresses: [],
-      orders: [],
-      usedCoupons: [],
+      addresses: [] as any[],
+      orders: [] as any[],
+      usedCoupons: [] as any[],
       createdAt: now,
       updatedAt: now,
-    });
+      __v: 0,
+    };
+    const result = await CustomerDbModel.collection.insertOne(ordered as any);
+    const doc = await CustomerDbModel.findById(result.insertedId).lean();
     return toCustomer(doc);
   }
 
@@ -461,7 +490,7 @@ export class MongoStorage implements IStorage {
       const existing = await CustomerDbModel.findOne({ phone }).lean();
       if (!existing) {
         const now = new Date();
-        await CustomerDbModel.create({
+        await CustomerDbModel.collection.insertOne({
           name: null,
           email: null,
           phone,
@@ -471,7 +500,8 @@ export class MongoStorage implements IStorage {
           usedCoupons: [],
           createdAt: now,
           updatedAt: now,
-        });
+          __v: 0,
+        } as any);
         return;
       }
       await CustomerDbModel.findOneAndUpdate(
